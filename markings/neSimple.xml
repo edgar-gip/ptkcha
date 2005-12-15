@@ -1,0 +1,8 @@
+<marking element="ne">
+<attribute nom="classe">
+<value v="PER" />
+<value v="ORG" />
+<value v="LOC" />
+<value v="MISC" />
+</attribute>
+</marking>

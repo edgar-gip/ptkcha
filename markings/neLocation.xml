@@ -1,0 +1,52 @@
+<marking element="ne">
+<attribute nom="classe">
+<value v="PER" />
+<value v="ORG" />
+<value v="LOC" />
+<value v="MISC" />
+
+<value v="TIME" />
+<value v="MONEY" />
+
+<value v="L_country" />
+<value v="L_state" />
+<value v="L_province" />
+<value v="L_county" />
+<value v="L_city" />
+<value v="L_district" />
+<value v="L_urban_place" />
+<value v="L_road" />
+
+<value v="L_building"/>
+<value v="L_station"/>
+<value v="L_airport" />
+<value v="L_port" />
+
+<value v="L_sea" />
+<value v="L_sea_accident" />
+<value v="L_island" />
+<value v="L_river" />
+<value v="L_channel" />
+<value v="L_lake" />
+<value v="L_water_reserve" />
+
+<value v="L_bay" />
+<value v="L_beach" />
+<value v="L_gulf" />
+<value v="L_cape" />
+
+<value v="L_desert" />
+<value v="L_plains" />
+
+<value v="L_mountain" />
+<value v="L_valley" />
+<value v="L_park" />
+<value v="L_continent" />
+
+<value v="L_planet" />
+<value v="L_star" />
+<value v="L_galaxy" />
+<value v="L_comet" />
+<value v="L_satellite" />
+</attribute>
+</marking>

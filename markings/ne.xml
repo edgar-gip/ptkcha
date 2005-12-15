@@ -1,0 +1,13 @@
+<marking element="ne">
+<attribute nom="classe">
+<value v="PERSON" />
+<value v="ORGANIZATION" />
+<value v="LOCATION" />
+<value v="OTHERS" />
+</attribute>
+<atribute nom="multiword">
+<value v="No" />
+<value v="Yes" />
+</attribute>
+<relation name="coref" stereo="bi" />
+</marking>

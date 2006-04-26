@@ -24,9 +24,8 @@ use ProjectPopUp;
 
 use OptionsDialog;
 use PercentDialog;
-use NewProjectDialog;
-use OpenProjectDialog;
 use DefaultDialog;
+use ProjectManagerDialog;
 
 package Interficie;
 
@@ -34,7 +33,7 @@ package Interficie;
 our $singleton;
 
 # Versio
-our $version = '2.7.6';
+our $version = '2.7.7';
 
 # Constructor
 sub new {
@@ -68,12 +67,8 @@ sub new {
 
     # Menu Projecte
     my $projMenu = $barra->Menu(-tearoff => 0);
-    $projMenu->add('command', -label => 'New...',
-		   -command => sub { $this->newProject() });
-    $projMenu->add('command', -label => 'Open...',
-		   -command => sub { $this->loadProject() });
-    $projMenu->add('command', -label => 'Delete...',
-		   -command => sub { $this->deleteProject() });
+    $projMenu->add('command', -label => 'Manage...',
+		   -command => sub { $this->manageProjects() });
     $projMenu->add('separator');
     $projMenu->add('command', -label => 'Options...',
 		   -command => sub { $this->opcions() });
@@ -142,8 +137,8 @@ sub new {
     # 6: infoChunk
     # 7: popUpMenu
     # 8: projectManager
-    # 9: newDialog
-    # 10:openDialog
+    # 9: projectManagerDialog
+    # 10:(unused)
     # 11:fitxerActual 
     # 12:llistaChunks
     # 13:cursorMode
@@ -165,13 +160,13 @@ sub new {
     @{$this} = ( 'inhab', undef, $centralText,
 		 $win, $infoProject, $relFrame,
 		 $infoChunk, $popupMenu, $projeKtManager,
-		 new NewProjectDialog($win, $filterManager), new OpenProjectDialog($win, $projeKtManager), '',
+		 undef, undef, '',
 		 new LlistaChunks($centralText), $defaultCursor, $defaultCursor,
 		 new XML::Parser(Style => 'Tree'), $configFile, 0,
 		 'hand1', new OptionsDialog($win), $vistaMenu,
 		 -1, 0, undef,
 		 [], $pluginMenu, undef,
-		 $fileMenu, $filterManager
+		 $fileMenu, $filterManager, undef
 	       );
     
     # Binding
@@ -196,66 +191,19 @@ sub new {
 # Comandes del Menu #
 #####################
 
-# Crear un nou projecte
-sub newProject {
+# Manegar els projectes
+sub manageProjects {
     my ($this) = @_;
-
-    if ($this->[0] ne 'inhab') {
-	# Tenim un text en marxa
-	$this->saveCurrent();
-	$this->freePlugins();
-    }
     
-    $this->[9]->populate();
-    my $fi = 0;
-    do {
-	my $res = $this->[9]->Show();
-	if ($res eq "OK") {
-	    # Comprovem errors
-	    my ($nom, $dirIn, $dirOut, $marcatge, $format, $extensio)
-		= $this->[9]->getParams();
-	    
-	    if (!$this->[8]->esNomValid($nom)) {
-		$this->mostrarError("Project $nom already exists");
-		
-	    } else {
-		# Directori de Sortida
-		if (!(-e $dirOut)){
-		    if ($this->confirmacio("Do you want to create the output directory\n$dirOut?")) {
-			mkdir($dirOut);
-		    } else {
-			return;
-		    }
-		}
-
-		# Provem com va el nou projecte
-		my $nouProjecte;
-		eval {
-		    $nouProjecte = new Projecte($nom, $dirIn, $dirOut,
-						$marcatge, $format, $extensio,
-						$this->[28]);
-		};
-		if ($@) {
-		    # Hi ha hagut algun error
-		    $this->mostrarError($@);
-
-		} else {
-		    # Afegim el projecte amb les dades que tenim
-		    $this->[8]->afegirProjecte($nouProjecte);
-		    
-		    # Actualitzem la interficie
-		    $this->updateInterficie($nouProjecte);
-		    
-		    # Indiquem que Sortim
-		    $fi = 1;
-		}
-	    }
-		
-	} else {
-	    # Indiquem que Sortim
-	    $fi = 1;
-	}
-    } while (!$fi);
+    if ($this->[9]) {
+  	$this->[9]->deiconify();
+  	$this->[9]->raise();
+	$this->[9]->focus();
+    } else {
+	$this->[9] = new ProjectManagerDialog($this, $this->[3]);
+	$this->[9]->populate($this->[8]);
+	$this->[9]->protocol('WM_DELETE_WINDOW', sub { $this->[9]->destroy(); $this->[9] = undef });
+    }
 }
 
 
@@ -266,6 +214,7 @@ sub confirmacio {
     my $retorn = $this->[3]->messageBox(-icon => 'question', -type => 'YesNo',
 					-message => $missatge,
 					-title => 'Confirmacio');
+    return $retorn eq 'Yes';
 }
 
 
@@ -280,61 +229,17 @@ sub mostrarError {
 }
 
 
-# Carregar-hi un projecte
-sub loadProject {
-    my ($this) = @_;
+# Actualitzar Interficie
+# Posa les dades d'un nou projecte
+sub updateInterficie {
+    my ($this, $projecte) = @_;
 
+    # Savem el previ
     if ($this->[0] ne 'inhab') {
 	# Tenim un text en marxa
 	$this->saveCurrent();
 	$this->freePlugins();
     }
-
-    $this->[10]->setTitle('Open Project');
-    my $res = $this->[10]->Show();
-    if ($res eq "OK") {
-	my $num = $this->[10]->getParams();
-	return if $num eq '';
-
-	# Carreguem el projecte escollit
-	my $nouProjecte = $this->[8][$num];
-
-	# Actualitzem la interficie
-	$this->updateInterficie($nouProjecte);	
-    }
-}
-
-
-# Delete a project
-sub deleteProject {
-    my ($this) = @_;
-
-    $this->[10]->setTitle('Delete Project');
-    my $res = $this->[10]->Show();
-    if ($res eq "OK") {
-	my $num = $this->[10]->getParams();
-	return if $num eq '';
-	
-	if ($this->[8][$num] == $this->[1]) {
-	    $this->mostrarError("Can't delete active project");
-	    return;
-	}
-	
-	if ($this->confirmacio("Delete project $this->[8][$num][0]?")) {
-	    $this->[8]->deleteProject($num);
-	    $this->[3]->messageBox(-icon => 'info',
-				   -type => 'Ok',
-				   -message => 'Project deleted',
-				   -title => 'Delete project');
-	}
-    }
-}
-
-
-# Actualitzar Interficie
-# Posa les dades d'un nou projecte
-sub updateInterficie {
-    my ($this, $projecte) = @_;
 
     # Indiquem que es el projecte Actual
     $this->[1] = $projecte;
@@ -1070,11 +975,11 @@ sub mostraLlegenda {
     if ($this->[23]) {
 	$this->[23]->deiconify();
 	$this->[23]->raise();
-	
+	$this->[23]->focus();
     } else {
 	$this->[23] = new PercentDialog($this, $this->[3]);
 	$this->[23]->mostrarAtribut($this->[21]) unless $this->[0] eq 'inhab';
-	$this->[23]->protocol('WM_DELETE_WINDOW', sub { $this->[23] = undef });
+	$this->[23]->protocol('WM_DELETE_WINDOW', sub { $this->[23]->destroy(); $this->[23] = undef });
     }
 }
     

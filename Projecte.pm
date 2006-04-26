@@ -8,39 +8,105 @@ use Marcatge;
 
 package Projecte;
 
+# Errors
+our $ERR_NOERR = 0;
+
+our $ERR_INPUT_NODEF = 1;
+our $ERR_INPUT_NOEXS = 2;
+our $ERR_INPUT_NODIR = 4;
+our $ERR_INPUT_NORD  = 8;
+our $ERR_INPUT       =
+    $ERR_INPUT_NODEF | $ERR_INPUT_NOEXS |
+    $ERR_INPUT_NODIR | $ERR_INPUT_NORD;
+
+our $ERR_OUTPUT_NODEF = 16;
+our $ERR_OUTPUT_NOEXS = 32;
+our $ERR_OUTPUT_NODIR = 64;
+our $ERR_OUTPUT_NOWR  = 128;
+our $ERR_OUTPUT       =
+    $ERR_OUTPUT_NODEF | $ERR_OUTPUT_NOEXS |
+    $ERR_OUTPUT_NODIR | $ERR_OUTPUT_NOWR;
+
+our $ERR_MARK_NODEF = 256;
+our $ERR_MARK_NOEXS = 512;
+our $ERR_MARK_DIR   = 1024;
+our $ERR_MARK_NORD  = 2048;
+our $ERR_MARK_XML   = 4096;
+our $ERR_MARK       =
+    $ERR_MARK_NODEF | $ERR_MARK_NOEXS |
+    $ERR_MARK_DIR   | $ERR_MARK_NORD  | $ERR_MARK_XML;
+
+our $ERR_FILTER_NODEF = 8192;
+our $ERR_FILTER_NOEXS = 16384;
+our $ERR_FILTER       =
+    $ERR_FILTER_NODEF | $ERR_FILTER_NOEXS;
+
+our $ERR_EXTEN_NODEF = 32768;
+our $ERR_EXTEN       =
+    $ERR_EXTEN_NODEF;
+
+our $ERR_NAME_NODEF  = 65536;
+our $ERR_NAME        =
+    $ERR_NAME_NODEF;
+
+# Messages
+our %messages = ( $ERR_NOERR => 'No Error',
+
+		  $ERR_INPUT_NODEF => 'Input is not defined',
+		  $ERR_INPUT_NOEXS => 'Input does not exist',
+		  $ERR_INPUT_NODIR => 'Input is not a directory',
+		  $ERR_INPUT_NORD => 'Input is not readable',
+
+		  $ERR_OUTPUT_NODEF => 'Output is not defined',
+		  $ERR_OUTPUT_NOEXS => 'Output does not exist',
+		  $ERR_OUTPUT_NODIR => 'Output is not a directory',
+		  $ERR_OUTPUT_NOWR => 'Output is not writable',
+
+		  $ERR_MARK_NODEF => 'Marking is not defined',
+		  $ERR_MARK_NOEXS => 'Marking does not exist',
+		  $ERR_MARK_DIR => 'Marking is a directory',
+		  $ERR_MARK_NORD => 'Marking is not readable',
+		  $ERR_MARK_XML => 'Marking is not valid XML',
+		  
+		  $ERR_FILTER_NODEF => 'Filter is not defined',
+		  $ERR_FILTER_NOEXS => 'Filter does not exist',
+		  
+		  $ERR_EXTEN_NODEF => 'Extension is not defined',
+		  
+		  $ERR_NAME_NODEF => 'Name is not defined');
+
+# Global filter manager
+our $filterManager;
 
 # Constructor
 sub new {
     my ($classe, $nom, $dirIn, $dirOut, $marcat, $filtre,
-	$extensio, $filterManager) = @_;
-
-    # Comprovem els directoris
-    die "Input does not exist: $dirIn\n"    if !(-e $dirIn);
-    die "Output does not exist: $dirOut\n"  if !(-e $dirOut);
-    die "Marking does not exist: $marcat\n" if !(-e $marcat);
-
-    die "Input in not a directory: $dirIn\n"   if !(-d $dirIn);
-    die "Output is not a directory: $dirOut\n" if !(-d $dirOut);
-
-    die "Input is not readable: $dirIn\n" if !(-r $dirIn);
-    die "Output is not readable/writable: $dirOut\n"
-	if !(-r $dirOut && -w $dirOut);
-
-    die "Marking is not readable: $marcat\n" if !(-r $marcat);
-
-    my $filterObj = $filterManager->{$filtre};
-    die "Wrong filter: \"$filtre\"\n" if !$filterObj;
+	$extensio) = @_;
 
     # Creem l'objecte
     my $this = [ $nom, $dirIn, $dirOut, $marcat, undef, $filtre,
-		 $filterObj, $extensio ];
+		 undef, $extensio ];
+    bless($this, $classe);
+
+    # Comprovar
+    $this->check();
+    return $this;
+}
+
+
+# Copy Constructor
+sub clone {
+    my ($classe, $projecte) = @_;
+
+    # Creem l'objecte
+    my $this = [ @{$projecte} ];
     return bless($this, $classe);
 }
 
 
 # Constructor from an XML tree
 sub newFromXML {
-    my ($class, $tree, $filterManager) = @_;
+    my ($class, $tree) = @_;
 
     # Get the attributes
     my $name   = $tree->{'name'};
@@ -50,30 +116,94 @@ sub newFromXML {
     my $filter = $tree->{'filter'};
     my $exten  = $tree->{'extension'};
 
-    die "Missing value\n"
-	if (!$name || !$dirIn || !$dirOut ||
-	    !$mark || !$filter || !$exten);
     return $class->new($name, $dirIn, $dirOut, $mark, $filter,
-		       $exten, $filterManager);
+		       $exten);
 }
 
 
-# Obtenir el Nom
-sub getNom    { return $_[0]->[0]; }
-sub getDirOut { return $_[0]->[2]; }
-
-# Obtenir el Marcatge
-sub getMarcatge {
+# Check
+sub check {
     my ($this) = @_;
 
-    # Si esta definit, es que ja l'hem carregat abans
-    if (!defined($this->[4])) {
-	# El carreguem
-	$this->[4] = new Marcatge($this->[3]);
+    # Get attributes
+    my ($name, $dirIn, $dirOut, $marcat, $filtre, $exten) =
+	@{$this}[0,1,2,3,5,7];
+
+    # At the beginning
+    my $status = $ERR_NOERR;
+
+    # Name
+    if (!$name) {
+	$status |= $ERR_NAME_NODEF;
     }
 
-    return $_[0]->[4];
+    # Input dir
+    if (!$dirIn) {
+	$status |= $ERR_INPUT_NODEF;
+    } elsif (!-e $dirIn) {
+	$status |= $ERR_INPUT_NOEXS;
+    } elsif (!-d $dirIn) {
+	$status |= $ERR_INPUT_NODIR;
+    } elsif (!-r $dirIn) {
+	$status |= $ERR_INPUT_NORD;
+    }
+
+    # Output dir
+    if (!$dirOut) {
+	$status |= $ERR_OUTPUT_NODEF;
+    } elsif (!-e $dirOut) {
+	$status |= $ERR_OUTPUT_NOEXS;
+    } elsif (!-d $dirOut) {
+	$status |= $ERR_OUTPUT_NODIR;
+    } elsif ((!-w $dirOut) || (!-r $dirOut)) {
+	$status |= $ERR_OUTPUT_NOWR;
+    }
+
+    # Marking
+    $this->[4] = undef;
+    if (!$marcat) {
+	$status |= $ERR_MARK_NODEF;
+    } elsif (!-e $marcat) {
+	$status |= $ERR_MARK_NOEXS;
+    } elsif (-d $marcat) {
+	$status |= $ERR_MARK_DIR;
+    } elsif (!-r $marcat) {
+	$status |= $ERR_MARK_NORD;
+    } else {
+	eval {
+	    $this->[4] = new Marcatge($this->[3]);
+	};
+	$status |= $ERR_MARK_XML if $@;
+    }
+
+    # Filter
+    $this->[6] = undef;
+    if (!$filtre) {
+	$status |= $ERR_FILTER_NODEF;
+    } else {
+	$this->[6] = $filterManager->{$filtre};
+	$status |= $ERR_FILTER_NOEXS unless $this->[6];
+    }
+
+    # Extension
+    if (!$exten) {
+	$status |= $ERR_EXTEN_NODEF;
+    }
+
+    # Set the status
+    $this->[8] = $status;
 }
+
+
+# Consultores
+sub getNom      { return $_[0]->[0]; }
+sub getDirIn    { return $_[0]->[1]; }
+sub getDirOut   { return $_[0]->[2]; }
+sub getMarcFile { return $_[0]->[3]; }
+sub getMarcatge { return $_[0]->[4]; }
+sub getFiltName { return $_[0]->[5]; }
+sub getExtens   { return $_[0]->[7]; }
+sub getStatus   { return $_[0]->[8]; }
 
 
 # Obtenir els Fitxers

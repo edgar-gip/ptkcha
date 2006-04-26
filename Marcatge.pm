@@ -17,12 +17,13 @@ package Marcatge;
 # 5: Etiqueta
 # 6: Colors
 # 7: Plugins
+# 8: Fitxer
 
 sub new {
     my ($classe, $fitxer) = @_;
 
     # L'objecte (amb valors per defecte)
-    my $this = [ [], [], {}, {}, 0, 'chunk', [], [] ];
+    my $this = [ [], [], {}, {}, 0, 'chunk', [], [], $fitxer ];
 
     return if $fitxer eq ''; # Marcatge buit
 
@@ -154,6 +155,7 @@ sub findRelacio  { return $_[0]->[3]{$_[1]}; }
 sub isClustered  { return $_[0]->[4]; }
 sub getEtiqueta  { return $_[0]->[5]; }
 sub getPlugins   { return $_[0]->[7]; }
+sub getFileName  { return $_[0]->[8]; }
 
 sub colorAtribut {
     my ($this, $nAtrib, $valor) = @_;

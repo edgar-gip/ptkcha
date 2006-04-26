@@ -3,6 +3,12 @@
 
 use strict;
 
+# Load from the execution dir, if possible
+BEGIN {
+    $0 =~ /(^|.*\/)([^\/]+)$/;
+    unshift(@INC, $1 ? $1 : '.');
+}
+
 use Tk;
 
 use Interficie;

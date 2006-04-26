@@ -4,12 +4,17 @@ use strict;
 
 use IO::File;
 
+use Projecte;
+
 package ProjectManager;
 
 # Constructor
 # Load from a tree
 sub new {
     my ($class, $tree, $filterManager) = @_;
+
+    # Set the filter manager
+    $Projecte::filterManager = $filterManager;
 
     # Som una llista de Projectes
     my $this = [];
@@ -23,13 +28,8 @@ sub new {
 	my $content = shift(@{$tree});
 	
 	if ($type eq 'project') {
-	    eval {
-		my $p = newFromXML Projecte($content->[0], $filterManager);
-		push(@{$this}, $p);
-	    };
-	    
-	    # Informem si hi ha hagut errors
-	    print "Error Opening Project: $@" if $@;
+	    my $p = newFromXML Projecte($content->[0], $filterManager);
+	    push(@{$this}, $p);
 	}
     }
 

@@ -5,7 +5,7 @@
 <value v="LOCATION" />
 <value v="OTHERS" />
 </attribute>
-<atribute nom="multiword">
+<attribute nom="multiword">
 <value v="No" />
 <value v="Yes" />
 </attribute>

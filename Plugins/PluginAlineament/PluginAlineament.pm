@@ -74,7 +74,7 @@ sub alinear {
 	($mode eq 'directori' and $this->alignDir())
 	    or
 	($mode eq 'fitxer' and $this->alignFile());
-    }	    
+    }
 }
 
 
@@ -84,13 +84,19 @@ sub alignProject {
 
     # Busquem el projecte d'origen
     my $nprojecte = $this->[0][3];
-    my $projecteOrig  = $this->[1]->getProjectManager()
-	->cercarProjecte($nprojecte);
+    $nprojecte =~ /^(\d+)\:/;
+    my $projecteOrig  = $this->[1]->getProjectManager()->[$1 - 1];
 
     if (!$projecteOrig) {
 	# Error!
 	$this->[1]->mostrarError("Project\n$nprojecte\ndoes not exist!");
-	return;       
+	return;
+    }
+
+    if ($projecteOrig->getStatus()) {
+	# Error!
+	$this->[1]->mostrarError("Project\n$nprojecte\ncontains errors!");
+	return;
     }
 
     # Busquem els fitxers
@@ -126,9 +132,9 @@ sub alignProject {
 		
 		$this->[3] = 1;
 		$this->[4]->resetParcial();
-		
+
 		my $textNou = $this->[2]->alinear($textO, $textAct);
-		
+
 		$projecte->saveFile($actual, $textNou);
 	    };
 
@@ -137,7 +143,6 @@ sub alignProject {
 		$this->[5]->afegirElement(" for $actual");
 		$hiHaError = 1;
 	    }
-	    
 	}
 	
 	$i += $incr;
@@ -179,7 +184,7 @@ sub alignDir {
     my $incr = 100 / @files;
     foreach my $actual (@files) {
 	my $origen;
-	if ($extensio ne '<cap>') {
+	if ($extensio ne '<none>') {
 	    $origen = "$directori/$actual$extensio";
 	} else {
 	    $origen = "$directori/$actual";

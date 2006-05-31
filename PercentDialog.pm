@@ -174,7 +174,7 @@ sub updateAtribut {
 	if ($neteja) {
 	    $this->[6]->configure(-text => '<Globals>');
 	    $this->[2]->set(0, 1, -itemtype => 'text',
-			    -text => 'MARCAT', -style => $this->[3]);
+			    -text => 'MARKED', -style => $this->[3]);
 	}
 
 	if ($marcatge->isClustered()) {

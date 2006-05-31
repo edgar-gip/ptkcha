@@ -1042,7 +1042,7 @@ sub about {
     my ($this) = @_;
     
     $this->[3]->messageBox(-icon => 'info', -type => 'Ok',
-			   -message => "PTkChA v$version\nby Edgar Gonzalez i Pellicer\nTALP Research Center\nBarcelona, 2004, 2005\negonzalez\@lsi.upc.edu",
+			   -message => "PTkChA v$version\nby Edgar Gonzalez i Pellicer\nTALP Research Center\nBarcelona, 2004-2006\negonzalez\@lsi.upc.edu",
 			   -title => 'About...');
 }
 

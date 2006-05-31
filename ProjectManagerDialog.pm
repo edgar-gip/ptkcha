@@ -93,6 +93,8 @@ sub populate {
     # For each project in the project manager
     for (my $i = 0; $i < @{$projectManager}; ++$i) {
 	$this->populateRow($i, $projectManager->[$i]);
+	$this->[9] = $i
+	    if $projectManager->[$i] == $this->[1]->getProjecte();
     }
 
     # Save the project manager
@@ -111,7 +113,7 @@ sub populateRow {
     if ($proj->getStatus()) {
 	$grid->set(0, $i + 1,
 		   -itemtype => 'text',
-		   -text =>  '!',
+		   -text =>  'Error',
 		   -style => $stylRed);
     } elsif ($proj == $this->[1]->getProjecte()) {
 	$grid->set(0, $i + 1,

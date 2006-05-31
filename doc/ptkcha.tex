@@ -42,14 +42,14 @@ probably work.
 
 	
 \subsection{Installation}
-Just download the last version from
+Download the last version (currently 2.7.7) from
 \url{http://www.lsi.upc.edu/~egonzalez/ptkcha.html}, and uncompress
 the tar file you will find there in a directory of your
 choice. \ptkcha\ only needs permission to write its configuration
 file, \texttt{.ptkcha.xml}, in your home directory.
 
 \subsection{Starting the program}
-Just issue the command:
+Issue the command:
 
 \begin{verbatim}
 > perl ptkcha.pl
@@ -65,8 +65,9 @@ interesting to keep it.
 
 
 \section{Concepts}
+\label{sec:concepts}
 
-The main concepts in \ptkcha\ appear in figure \ref{fig:concepts}.
+The main concepts in \ptkcha\ appear in Figure \ref{fig:concepts}.
 
 \begin{figure}[ht]
 \begin{center}
@@ -79,10 +80,10 @@ The main concepts in \ptkcha\ appear in figure \ref{fig:concepts}.
 \end{figure}
 
 Work is arranged in \textbf{Projects}. A \textbf{Project} is defined
-by an \textbf{Input Directory}, an \textbf{Extension} to select those
+by an \textbf{Input Directory}, an \textbf{Extension} to select the
 files in the input directory we are interested in, a \textbf{Filter}
-for importing, an \textbf{Output Directory} and a \textbf{Marking},
-defined in a file.
+for importing the files, an \textbf{Output Directory} and a
+\textbf{Marking}, defined in a file.
 
 The philosophy of work is that the files in the \textbf{Input
 Directory} with the specified \textbf{Extension} have to be
@@ -95,7 +96,7 @@ with the same name as the input one, but with extension
 \textbf{.sum}\footnote{The reason for the \textbf{.sum} extension
 instead of \textbf{.xml} is historical: the program was initially
 created only for annotating summaries, and hence the \textbf{.sum}
-extension.} (see section \ref{sec:output}).
+extension.} (see Section \ref{sec:output}).
 
 Further accesses to this file will not take the raw input file from
 the \textbf{Input Directory}, but rather will take the already
@@ -104,11 +105,11 @@ annotated version from the \textbf{Output Directory}.
 The annotation process consists in the identification of
 \textbf{Chunks}, non-overlapping segments of the input text, as well
 as the definition of their \textbf{Attributes} and the
-\textbf{Relations} between them (see figure \ref{fig:chunks}). The
+\textbf{Relations} between them (see Figure \ref{fig:chunks}). The
 attributes and relations that may be defined are specified in the
-\textbf{Marking} (see section \ref{sec:marking}). Each chunk has a
+\textbf{Marking} (see Section \ref{sec:marking}). Each chunk has a
 unique identifier (ID), and if clusters are defined, it also has a
-cluster identifier (SUBST, see section \ref{sec:marking}).
+cluster identifier (SUBST, see Section \ref{sec:marking}).
 
 \begin{figure}[ht]
 \begin{center}
@@ -122,10 +123,10 @@ cluster identifier (SUBST, see section \ref{sec:marking}).
 
 \section{Marking Files}
 \label{sec:marking}
-A sample of a marking file is that of figure \ref{fig:marking}.
+A sample of a marking file is that of Figure \ref{fig:marking}.
 
 \begin{figure}[ht]
-
+ 
 \begin{center}
 \begin{minipage}{80mm}
 \begin{verbatim}
@@ -157,7 +158,7 @@ The main element is the \textbf{marking} element. Its attribute
 \textbf{element} simply gives the name of the tag that will be used in
 the output files of the project to delimit the chunks. So, in this
 case, the output files will contain \verb|<ne>...</ne>| pairs. Inside
-the \textbf{marking} element come the rest of the elements:
+the \textbf{marking} element come the other elements:
 
 \begin{itemize}
 \item \textbf{attribute} elements define attributes the chunks will
@@ -177,11 +178,11 @@ unidirectional relation this is not necessarily true.
 \item \textbf{plugin} elements define which plugins will be active
 when working with this marking. For every plugin, we must define its
 \textbf{name}, which identifies it in the \textsc{Plugins} menu (see
-section \ref{sec:pluginmenu}), as well as the name of the
+Section \ref{sec:pluginmenu}), as well as the name of the
 \textbf{class} which implements it and the \textbf{file} where it is
 located. The files are searched in the default Perl directories, as
 well as in those listed in the global option \textbf{Include
-Directories} (see section \ref{sec:project}). See section
+Directories} (see Section \ref{sec:project}). See section
 \ref{sec:plugins} for more details about plugins.
 
 \item If the \textbf{clustered} element appears, then an equivalence
@@ -200,7 +201,7 @@ The main window is divided in 4 regions (see figure
 \begin{figure}[ht]
 \begin{center}
 
-\includegraphics[width=140mm]{img/screen-annot.eps}
+\includegraphics[width=140mm]{img/screen2-annot.eps}
 
 \caption{Main window}
 \label{fig:screen}
@@ -231,7 +232,7 @@ overlaps but is not strictly included in the chunk, and do as in the
 previous case. The chunk will grow to the union of both regions.
 \item To see information about a chunk, move the pointer over it and
 the information will appear on the chunk information region
-(identified as 3 in figure \ref{fig:screen}).
+(identified as 3 in Figure \ref{fig:screen}).
 \item To see the relations of a chunk, click the left button on it,
 and the information will be shown on the relation information region
 (identified as 4).
@@ -265,16 +266,84 @@ For users with single-button mice, those operations requiring the
 right button may also be performed by holding the SHIFT key while
 clicking the left button.
 
+\subsection{Project Manager}
+\label{sec:projman}
+The project manager window lists the available projects, and allows
+its creation, modification, deletion and cloning, as well as its
+opening as current project in the main window. An image of the project
+manager window is shown in Figure \ref{fig:projectman}. The
+information for each project includes its status (which can be
+\emph{Active} for the currently selected project, \emph{OK} for
+projects that have no errors and \emph{Error} for those projects that
+have errors which prevent its use), its name and the name of its
+marking.
+
+\begin{figure}[ht]
+\begin{center}
+
+\includegraphics[width=100mm]{img/project-manager.eps}
+
+\caption{Project manager window}
+\label{fig:projectman}
+\end{center}
+\end{figure}
+
+Project maintenance tasks are invoiced using the buttons in the
+window. Selection of a project is accomplished by clicking on it:
+
+\begin{description}
+\item[Open] Opens the project in the main window.
+\item[New] Creates a new project. A project window (see Section
+\ref{sec:projwin}) is opened to get the information about the project.
+\item[Modify] Opens a project window which allows the modification of
+the parameters of the selected project. The active project cannot be
+modified.
+\item[Delete] Deletes the selected project. The active project cannot
+be deleted.
+\item[Clone] Clones the selected project, this is, creates a new
+project with the same parameters. 
+\end{description}
+
+\subsection{Project Window}
+\label{sec:projwin}
+
+To create a new project or modify an existing one, a special purpose
+window is opened. It allows the edition of all the parameters defining
+a project: name, input and output directories, marking, filter and
+extension (see Section \ref{sec:concepts}). An image of it can be seen
+in Figure \ref{fig:projwin}
+
+\begin{figure}[ht]
+\begin{center}
+
+\includegraphics[width=75mm]{img/project.eps}
+
+\caption{Project window}
+\label{fig:projwin}
+\end{center}
+\end{figure}
+
+If there is an error in any of the parameters, its value will be
+highlighted in red. When the mouse pointer is on the value, an
+explanation of the error will appear on the top of the window (Figure
+\ref{fig:projerror}).
+
+\begin{figure}[ht]
+\begin{center}
+
+\includegraphics[width=75mm]{img/project-error.eps}
+
+\caption{Project window showing an error in the parameters} 
+\label{fig:projerror}
+\end{center}
+\end{figure}
+
 \subsection{Menus}
 \subsubsection{Project}
 \label{sec:project}
 \begin{description}
-\item[New...] Allows the creation of a new project. The newly created
-project is set as the current one.
-\item[Open...] Sets a project from the list of existing ones as the
-current.
-\item[Delete...] Allows the deletion of an existing project. It
-cannot be the current one.
+\item[Manage...] Opens the project manager window (Section
+\ref{sec:projman}).
 \item[Options...] Allows the changing of global options:
 \begin{description}
 \item [Forced Writing] If a file has not been modified from its state
@@ -282,7 +351,7 @@ in the input directory, by default its counterpart in the output
 directory is not written. By activating this option we can force the
 output file to be written.
 \item [Selection Expansion] Expands the selection when creating new
-chunks, as explained in section \ref{sec:main}.
+chunks, as explained in Section \ref{sec:main}.
 \item [Include Directories] Gives a list of additional directories to
 look for the source files of plugins and filters (see sections
 \ref{sec:plugins} and \ref{sec:filters}).
@@ -311,18 +380,30 @@ of the chunk or of the cluster it belongs to (in case of a clustered
 marking), or may also be a function of the value of an attribute. With
 this menu we can change the current view mode. The correspondence
 between colors and values can be examined using the Chart window
-(section \ref{sec:windows}).
+(Section \ref{sec:windows}).
 
 \subsubsection{Windows}
 \label{sec:windows}
 \begin{description}
 \item[Chart] Opens a Chart window. The Chart window accomplishes a
 double task: it gives the values of the attributes for every color in
-the current view mode (see section \ref{sec:view}), and it also gives
+the current view mode (see Section \ref{sec:view}), and it also gives
 the number of words in chunks with every attribute value, as well as
 the fraction of the total of words in the document they represent. The
 discriminant attribute in the Chart window depends on the current view
-mode, selected in the \textsc{View} menu. 
+mode, selected in the \textsc{View} menu. A sample chart window is
+shown in Figure \ref{fig:chartwin}
+
+\begin{figure}[ht]
+\begin{center}
+
+\includegraphics[width=75mm]{img/chart.eps}
+
+\caption{Chart window}
+\label{fig:chartwin}
+\end{center}
+\end{figure}
+
 \end{description}
 
 \subsubsection{Plugins}
@@ -344,8 +425,8 @@ The output files are \emph{headless} XML files, in the sense that
 there is no element that embraces the whole file. This makes them not
 strictly XML-compliant, yet suitable for most practical purposes. If
 XML-compliance is an issue, including the file contents in a
-\texttt{<document>..</document>} pair is enough. A sample of the
-contents of an output file is in figure \ref{fig:output}.
+\texttt{<document>..</document>} pair or similar is enough. A sample
+of the contents of an output file is in Figure \ref{fig:output}.
 
 \begin{figure}[ht]
 
@@ -376,7 +457,7 @@ technique for simulating the phone directory application for this
 The file contains the imported text from the input directory. Each
 annotated chunk is enclosed inside an XML element. The type of element
 determined by the \textbf{element} attribute in the marking file (see
-section \ref{sec:marking}). In the sample case, it is
+Section \ref{sec:marking}). In the sample case, it is
 \texttt{summary}. The attributes of the element are its unique ID, its
 SUBST or cluster ID (only if the marking is \textbf{clustered}) and
 the values for all attributes of the chunk. In the sample case, the
@@ -398,7 +479,7 @@ additional functionalities depending on the type of marking we are
 using.
 
 A sample of the kind of functionalities plugins may provide appears in
-section \ref{sec:sumplugin}.
+Sections \ref{sec:sumplugin} and \ref{sec:alignplugin}.
 
 
 \section{Filters}
@@ -426,21 +507,32 @@ addition, removes capitalization and punctuation information.
 
 \section{Summary Annotation Framework}
 \subsection{CHIL Summary Creation Methodology}
-The \cite{fuentes05a} CHIL project deliverable defined a methodology
+The \cite{fuentes05a} CHIL project deliverable defines a methodology
 for the creation of summaries.
 
-From the raw text, human annotators started by identifying relevant
-text fragments (chunks) and giving them a weight (1, 2 or 3) according
-to their relevance. Also, chunks considered equivalent had to be
-identified, as well as chunks whose presence in a summary was
-dependant on the presence of another one to allow understanding.
+From the raw text, human annotators start by identifying relevant text
+fragments (chunks) and giving them a weight (1, 2 or 3) according to
+their relevance. Also, chunks considered equivalent have to be
+identified, as well as chunks whose presence in a summary is dependent
+on the presence of another one to allow understanding.
 
-Lastly, summaries of different sizes had to be built by selecting a
+Lastly, summaries of different sizes have to be built by selecting a
 number of chunks from the relevant set.
 
 \ptkcha\ includes a marking and a plugin for summary chunk annotation
 and summary creation following this methodology.
 
+In addition, to ease the creation of summaries of automatical
+transcripts, \cite{fuentes05a} contemplates the transferal of the
+chunks selected for the construction of summaries on manual
+transcripts to automatical ones. This implies finding, for each chunk
+on the manual transcripts, the equivalent chunk in automatical ones,
+taking into account the recognition errors.
+
+This marking also includes a plugin which finds the alignment of the
+words in two texts minimizing word error rate and transfers the chunks
+annotated in one of them to the other, giving complete support for the
+CHIL methodology for the creation of summaries.
 
 \subsection{Summary Marking}
 The summary marking defines:
@@ -513,6 +605,32 @@ This option just checks the sanity of the \texttt{depen} relations: no
 chunk should depend of another one of lower relevance. 
 
 \subsection{Alignment Plugin}
+\label{sec:alignplugin}
+The plugin allows the transfer of a set of annotations from one text
+to another, accessed through the \textsc{Plugins} menu.
+
+The plugin dialog window (depicted in Figure \ref{fig:alignplug})
+allows three different kinds of alignment:
+
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=70mm]{img/alignplugin.eps}
+\caption{The Align Project interface}
+\label{fig:alignplug}
+\end{center}
+\end{figure}
+
+\begin{description}
+\item[Project] Each file in the current project is aligned with the
+file with the same name from the selected project.
+\item[Directory] Each file in the current project is aligned with the
+file with the same name and the given extension in the given
+directory.
+\item[File] The current file is aligned with the given file.
+\end{description}
+
+In all cases, the chunks are transferred \textbf{from} the given files
+or project \textbf{to} the current file or project.
 
 \bibliographystyle{alpha}
 \bibliography{bibliografia}

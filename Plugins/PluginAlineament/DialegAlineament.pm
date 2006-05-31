@@ -74,7 +74,7 @@ sub new {
 			       -state => 'disabled')
 	->grid(-row => 1, -column => 1, -sticky => 'ne');
     my $combo2 = $frame2->BrowseEntry(-label => 'Extension',
-				      -choices => [ '.txt', '.xml', '.sum', '<cap>' ],
+				      -choices => [ '.txt', '.xml', '.sum', '<none>' ],
 				      -state => 'disabled')
 	->grid(-row => 2, -column => 0, -columnspan => 2, -sticky => 'new');
     
@@ -124,7 +124,8 @@ sub new {
 sub actualitzar {
     my ($this, $main) = @_;
 
-    my @projs = map { $_->getNom() } @{$main->getProjectManager()};
+    my $i = 0;
+    my @projs = map { (++$i).": ".($_->getNom()) } @{$main->getProjectManager()};
     $this->[3] = $projs[0];
     $this->[2]->configure(-choices => \@projs);
 }

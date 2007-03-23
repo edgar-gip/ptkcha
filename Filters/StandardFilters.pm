@@ -1,130 +1,47 @@
+# Copyright (C)  Edgar GonzÃ lez i Pellicer
+#
+# This file is part of PTkChA
+#  
+# PTkChA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software 
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 # Built-in filters
+# Basic Ones
 
 use strict;
 
 use Filter;
 
-
 #######
-# UTF #
+# BIO #
 #######
 
-package Filters::FilterUtf;
+package Filters::FilterBIO;
 
 our @ISA = qw( FilterLineByLine );
 
-# Reset
-sub reset {
-    my ($this) = @_;
-    
-    # State variable
-    $this->[1] = 0;
+
+# Constructor
+sub new {
+    my ($class, $marking) = @_;
+
+    my $this = FilterLineByLine::new($class);
+    push(@{$this}, 0,
+	 $marking->getEtiqueta(),
+	 map { $_->[0] } @{$marking->getAtributs()});
+    return $this;
 }
-
-
-# Filtre Utf
-sub filterLine {
-    my ($this, $linia, $noPunct) = @_;
-    
-    my $afegit;
-    while ($linia) {
-	# print "Mirant $linia en estat $estat...\n";
-	
-	# Segons l'estat en que estem
-	if ($this->[1] == 0) {
-	    # Fora d'un TAG
-	    # Mirem si n'hi ha algun
-	    if ($linia =~ /\s*\</) {
-		# El que hi hagi abans, ho enganxem
-		if ($`) {
-		    $afegit = $this->eliminarMarques($`, $noPunct); 
-		    $this->[0] .= $this->prepararImpXML($afegit)." "
-			if $afegit;
-		}
-		
-		$linia = $';
-		$this->[1] = 1;
-		
-	    } else {
-		$afegit = $this->eliminarMarques($linia, $noPunct);
-		$this->[0] .= $this->prepararImpXML($afegit)." "
-		    if $afegit;
-		$linia = '';
-	    }
-	    
-	} else {
-	    # Dins d'un TAG
-	    # Mirem de sortir-ne
-	    if ($linia =~ /\>\s*/) {
-		# Agafem el que hi hagi després
-		$linia = $';
-		$this->[1] = 0;
-		
-	    } else {
-		# Consumim tota la linia sense fer res
-		$linia = '';
-	    }
-	}
-    }
-}
-
-
-# Eliminar les marques SGML
-sub eliminarMarques {
-    my ($this, $linia, $noPunct) = @_;
-    
-    # Marques de no paraula
-    $linia =~ s/(\s|^)[\*\{\%](\w+)//g;
-    
-    # Marques d'una paraula
-    $linia =~ s/(\s|^)[\@\^\+](\w)/$1$2/g;
-    
-    # Sigles
-    $linia =~ s/\_//g;
-    
-    # Puntuacio
-    $linia =~ s/[\.\,\?\!]+(\s|$)/$1/g if $noPunct;
-			    
-    # BackGround
-    $linia =~ s/\[\[[^\]]+\]\]//g;
-    $linia =~ s/\[[^\]]+\]//g;
-
-    # Espais a l'inici, al final i dobles
-    $linia =~ s/^\s+//;
-    $linia =~ s/\s+^//;
-    $linia =~ s/\s\s+/ /g;
-
-    # print "Afegirem $linia...\n";
-    return $noPunct ? lc($linia) : $linia;
-}
-
-
-
-##########
-# UTF_NP #
-##########
-
-package Filters::FilterUtfNp;
-    
-our @ISA = qw( Filters::FilterUtf );
-
-
-# Only overloads this function
-sub filterLine {
-    my ($this, $line) = @_;
-
-    return $this->Filters::FilterUtf::filterLine($line, 1);
-}
-
-
-
-#######
-# YAM #
-#######
-
-package Filters::FilterYam;
-
-our @ISA = qw( FilterLineByLine );
 
 
 # Reset
@@ -136,53 +53,85 @@ sub reset {
 }
 
 
-# Filtrar Yam
+# Filter BIO
 sub filterLine {
     my ($this, $linia) = @_;
 
-    # Linia en blanc?
+    # Label and attributes
+    my ($label, @attrs) = @{$this}[2..$#{$this}];
+
+    # Blank Line
+    chomp($linia);
     if (!$linia) {
+	if ($this->[1]) {
+	    # Close previous
+	    $this->[0] .= "</$label>";
+	    $this->[1] = 0;
+	}
 	$this->[0] .= "\n";
 	return;
     }
 
     # Altrament
     my @parts = split(' ', $linia);
-    if ($parts[2] =~ /^B\-(.+)$/) {
-	# Comença una nova NE
+    my @bio   = split('-', $parts[-1]);
+    if ($bio[0] eq 'B') {
+	# New NE
 	if ($this->[1]) {
-	    # Tanquem l'anterior
-	    $this->[0] .= "</ne>";
+	    # Close previous
+	    $this->[0] .= "</$label>";
 	}
 
-	# Comencem la nostra
-	$this->[0] .= " <ne classe=\"$1\">".$this->prepararImpXML($parts[0]);
+	# Start ours
+	$this->[0] .= " <$label";
+	for (my $i = 1; $i < @bio; ++$i) {
+	    last if $i > @attrs;
+	    $this->[0] .= sprintf(" %s=\"%s\"",
+				  $attrs[$i-1], $bio[$i]);
+	}
+	$this->[0] .= ">$parts[0]";
 	$this->[1] = 1;
 
-    } elsif ($parts[2] =~ /^I(:?\-(.+))?$/) {
+    } elsif ($bio[0] eq 'I') {
 	if (!$this->[1]) {
-	    # N'obrim una de dummy -> Error Yamcha!
-	    $this->[0] .= " <ne classe=\"$1\">";
+	    # Open a dummy one -> BIO Error!
+	    $this->[0] .= " <$label";
+	    for (my $i = 1; $i < @bio; ++$i) {
+		last if $i > @attrs;
+		$this->[0] .= sprintf(" %s=\"%s\"",
+				      $attrs[$i-1], $bio[$i]);
+	    }
+	    $this->[0] .= ">$parts[0]";
 	    $this->[1] = 1;
+	} else {
+	    $this->[0] .= " $parts[0]";
 	}
 	
-	$this->[0] .= " ".$this->prepararImpXML($parts[0]);
-	
     } else {
-	# Cal tancar?
+	# Close previous
 	if ($this->[1]) {
-	    $this->[0] .= "</ne>";
+	    $this->[0] .= "</$label>";
 	    $this->[1] = 0;
 	}
 	
-	$this->[0] .= " ".$this->prepararImpXML($parts[0]);
+	$this->[0] .= " $parts[0]";
     }
 }
 
 
+# Finish
+sub finish {
+    my ($this) = @_;
+
+    # Finish if open
+    if ($this->[1]) {
+	$this->[0] .= "</$this->[2]>\n";
+    }
+}
+
 
 #######
-# TXT #
+# Txt #
 #######
 
 package Filters::FilterTxt;
@@ -194,16 +143,30 @@ our @ISA = qw( FilterLineByLine );
 sub filterLine {
     my ($this, $cadena) = @_;
 
-    # Coses que poden fer petar l'XML
-    # -> Han de venir del ViaVoice
-    $cadena =~ s/\s*\&\s*/ ampersand /g;
-    $cadena =~ s/\s*\<\s*/ is less than /g;
-    $cadena =~ s/\s*\>\s*/ is greater than /g;
-    $cadena =~ s/\s*¢\s*/ cent /g;
-
-    return $cadena;
+    # Just append, escaping things that would
+    # mess the XML up
+    $cadena =~ s/&/"&x26;"/ge;
+    $cadena =~ s/</"&x3c;"/ge;
+    $this->[0] .= $cadena;
 }
 
+
+#######
+# XML #
+#######
+
+package Filters::FilterXML;
+
+our @ISA = qw( FilterLineByLine );
+
+
+# Filtrar Text
+sub filterLine {
+    my ($this, $cadena) = @_;
+
+    # Just append -> We assume it is XML
+    $this->[0] .= $cadena;
+}
 
 
 # Return true

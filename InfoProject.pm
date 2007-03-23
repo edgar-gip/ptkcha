@@ -1,5 +1,22 @@
+# Copyright (C)  Edgar Gonzàlez i Pellicer
+#
+# This file is part of PTkChA
+#  
+# PTkChA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software 
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 # Panell amb Informacio sobre el Projecte
-# Edgar Gonzalez i Pellicer
 
 use strict;
 
@@ -21,9 +38,10 @@ sub new {
     # Omplim el Panell Superior
     my $frame = $pare->Frame();
 
+    # First label
     $frame->Label(-text => 'Project: ')
 	->grid(-column => 0, -row => 0, -sticky => 'ne');
-    my $entryPrjk = $frame->Entry(-width => 50, -state => 'disabled')
+    my $entryPrjk = $frame->Entry(-width => 50,  -state => 'disabled')
 	->grid(-column => 1, -row => 0, -sticky => 'nw');
     $frame->Label(-text => 'Input Dir: ')
 	->grid(-column => 0, -row => 1, -sticky => 'ne');
@@ -50,7 +68,9 @@ sub new {
 	->grid(-column => 2, -row => 2, -sticky => 'new');
 
     # Omplim el this
-    $this = [ $frame, $main, $selector, '', '', '', '', '', '', '' ];
+    $this = [ $frame, $main, $selector, '', '', '', '', '', '', '',
+	      $entryPrjk,   $entryDirIn, $entryDirOut,
+	      $entryMarcat, $entryMots,  $entryExten ];
     my $base = 3;
 
     # Actualitzem destins
@@ -70,9 +90,15 @@ sub new {
 sub actualitzar {
     my ($this, $projecte) = @_;
 
+    # Enable
+    map { $_->configure(-state => 'normal') } @{$this}[10..13,15];
+
     # Atributs
     @{$this}[3..6] = @{$projecte}[0..3];
     $this->[9]     = $projecte->[7];
+
+    # Read Only
+    map { $_->configure(-state => 'readonly') } @{$this}[10..13,15];
     
     # Activem el selector
     $this->[2]->configure(-state => 'readonly');
@@ -104,8 +130,10 @@ sub select {
 # Assignar Nombre de mots
 sub setNombreMots {
     my ($this, $n) = @_;
-
+    
+    $this->[14]->configure(-state => 'normal');
     $this->[8] = "$n words";
+    $this->[14]->configure(-state => 'readonly');
 }
 
 

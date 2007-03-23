@@ -1,3 +1,21 @@
+# Copyright (C)  Edgar Gonzàlez i Pellicer
+#
+# This file is part of PTkChA
+#  
+# PTkChA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software 
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 # Marcatge
 
 use strict;
@@ -18,12 +36,13 @@ package Marcatge;
 # 6: Colors
 # 7: Plugins
 # 8: Fitxer
+# 9: Extra Labels
 
 sub new {
     my ($classe, $fitxer) = @_;
 
     # L'objecte (amb valors per defecte)
-    my $this = [ [], [], {}, {}, 0, 'chunk', [], [], $fitxer ];
+    my $this = [ [], [], {}, {}, 0, 'chunk', [], [], $fitxer, [] ];
 
     return if $fitxer eq ''; # Marcatge buit
 
@@ -100,6 +119,11 @@ sub new {
 	    my $fitxer = $contingut->[0]{'file'}  || $contingut->[0]{'fitxer'};
 	    
 	    push(@{$this->[7]}, $nom, $classe, $fitxer);
+
+	} elsif ($tag eq 'extra') {
+	    # Add an extra label
+	    my $name = $contingut->[0]{'element'};
+	    push(@{$this->[9]}, $name);
 	}
 	# Espai per a ampliacions
     }
@@ -146,7 +170,6 @@ sub buildCadena {
 
 
 # Consultores
-
 sub getAtributs  { return $_[0]->[0]; }
 sub getRelacions { return $_[0]->[1]; }
 sub getRelacio   { return $_[0]->[1][$_[1]]; }
@@ -156,7 +179,9 @@ sub isClustered  { return $_[0]->[4]; }
 sub getEtiqueta  { return $_[0]->[5]; }
 sub getPlugins   { return $_[0]->[7]; }
 sub getFileName  { return $_[0]->[8]; }
+sub getExtras    { return $_[0]->[9]; }
 
+# Colour of an attribute
 sub colorAtribut {
     my ($this, $nAtrib, $valor) = @_;
 

@@ -1,3 +1,21 @@
+# Copyright (C)  Edgar Gonzàlez i Pellicer
+#
+# This file is part of PTkChA
+#  
+# PTkChA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software 
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 # Projecte del PTkChA
 
 use strict;
@@ -38,14 +56,15 @@ our $ERR_MARK       =
 
 our $ERR_FILTER_NODEF = 8192;
 our $ERR_FILTER_NOEXS = 16384;
+our $ERR_FILTER_ERROR = 32768;
 our $ERR_FILTER       =
-    $ERR_FILTER_NODEF | $ERR_FILTER_NOEXS;
+    $ERR_FILTER_NODEF | $ERR_FILTER_NOEXS | $ERR_FILTER_ERROR;
 
-our $ERR_EXTEN_NODEF = 32768;
+our $ERR_EXTEN_NODEF = 65536;
 our $ERR_EXTEN       =
     $ERR_EXTEN_NODEF;
 
-our $ERR_NAME_NODEF  = 65536;
+our $ERR_NAME_NODEF  = 131072;
 our $ERR_NAME        =
     $ERR_NAME_NODEF;
 
@@ -70,6 +89,7 @@ our %messages = ( $ERR_NOERR => 'No Error',
 		  
 		  $ERR_FILTER_NODEF => 'Filter is not defined',
 		  $ERR_FILTER_NOEXS => 'Filter does not exist',
+		  $ERR_FILTER_ERROR => 'Filter contains errors',
 		  
 		  $ERR_EXTEN_NODEF => 'Extension is not defined',
 		  
@@ -181,8 +201,11 @@ sub check {
     if (!$filtre) {
 	$status |= $ERR_FILTER_NODEF;
     } else {
-	$this->[6] = $filterManager->{$filtre};
-	$status |= $ERR_FILTER_NOEXS unless $this->[6];
+	eval {
+	    $this->[6] = $filterManager->newFilter($filtre, $this->[4]);
+	    $status |= $ERR_FILTER_NOEXS unless $this->[6];
+	};
+	$status |= $ERR_FILTER_ERROR if $@;
     }
 
     # Extension
@@ -228,12 +251,13 @@ sub loadFile {
 	my $fh = new IO::File("< $this->[2]/$fitxer.sum");
 	my $cadena = join('', $fh->getlines());
 	$fh->close();
-	return $cadena;
+	return $this->fixXMLIn($cadena);
 
     } else {
 	# No hi és, hem d'importar i filtrar
 	my $extensio = $this->[7];
-	return $this->[6]->filter("$this->[1]/$fitxer.$extensio");
+	my $string   = $this->[6]->filter("$this->[1]/$fitxer.$extensio");
+	return $this->fixXMLIn($string);
     }
 }
 
@@ -245,7 +269,7 @@ sub saveFile {
     my $fh = new IO::File("> $this->[2]/$fitxer.sum")
 	or die "No Es Pot Obrir Sortida $this->[2]/$fitxer.sum";
     
-    $fh->print($cadena);
+    $fh->print($this->fixXMLOut($cadena));
     $fh->close();
 }
 
@@ -263,6 +287,89 @@ sub toXML {
     my ($this) = @_;
 
     return "  <project name=\"$this->[0]\" dirIn=\"$this->[1]\" dirOut=\"$this->[2]\" marking=\"$this->[3]\" filter=\"$this->[5]\" extension=\"$this->[7]\" />\n";
+}
+
+
+# Fix a string for XML in the input
+sub fixXMLIn {
+    my ($this, $string) = @_;
+
+    # Label
+    my $label = $this->[4]->getEtiqueta();
+
+    # For each line
+    my @lines = split("\n", $string);
+    my $out;
+    foreach my $line (@lines) {
+	while ($line =~ /^(.*?)<([^<]+?)>(.*)$/) {
+	    my $prefix  = $1;
+	    my $content = $2;
+	    $line = $3;
+
+	    $prefix =~ s/</"&#x3c;"/ge;
+	    $out   .= $prefix;
+
+	    if ($content =~ /^\s*\/\s*$label\s*$/ ||
+		$content =~ /^\s*$label(\s+\w+=\"[^\"]*\")*\s*$/) {
+		# Add it as is
+		$out .= "<$content>";
+	    } else {
+		# Add it escaped
+		$out .= "&#x3c;$content>";
+	    }
+	}
+
+	# Add the last
+	$line =~ s/</"&#x3c;"/ge;
+	$out  .= "$line\n";
+    }
+
+    # Return
+    return $out;
+}
+
+
+# Fix a string for XML in the output
+sub fixXMLOut {
+    my ($this, $string) = @_;
+
+    # Change ampersands
+    $string =~ s/&/"&#x26;"/ge;
+    
+    # Non-changeable labels
+    my %good =
+	map { $_ => 1 } ($this->[4]->getEtiqueta(),
+			 @{$this->[4]->getExtras()});
+
+    # For each line
+    my @lines = split("\n", $string);
+    my $out;
+    foreach my $line (@lines) {
+	while ($line =~ /^(.*?)<([^<]+?)>(.*)$/) {
+	    my $prefix  = $1;
+	    my $content = $2;
+	    $line = $3;
+
+	    $prefix =~ s/</"&#x3c;"/ge;
+	    $out   .= $prefix;
+
+	    if (($content =~ /^\s*\/\s*(\w+)\s*$/ && $good{$1}) ||
+		($content =~ /^\s*(\w+)(\s+\w+=\"[^\"]*\")*\s*$/ && $good{$1})) {
+		# Add it as is
+		$out .= "<$content>";
+	    } else {
+		# Add it escaped
+		$out .= "&#x3c;$content>";
+	    }
+	}
+	
+	# Last
+	$line =~ s/</"&#x3c;"/ge;
+	$out .= "$line\n";
+    }
+
+    # Return
+    return $out;
 }
 
 

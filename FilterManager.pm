@@ -1,3 +1,21 @@
+# Copyright (C)  Edgar Gonzàlez i Pellicer
+#
+# This file is part of PTkChA
+#  
+# PTkChA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software 
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 # Filter manager
 
 use strict;
@@ -33,20 +51,26 @@ sub new {
 		die "Missing parameters for filter\n"
 		    if (!$name || !$file || !$cclass);
 
-		$this->addFilter($name, $file, $cclass);		
+		$this->addFilter($name, $file, $cclass, $config);
 	    }
 	}
     }
 
     # Add the default filters
-    $this->addFilter('utf', 'Filters::StandardFilters',
-		     'Filters::FilterUtf')   unless $this->{'utf'};
-    $this->addFilter('utf_np', 'Filters::StandardFilters',
-		     'Filters::FilterUtfNp') unless $this->{'utf_np'};
-    $this->addFilter('yam', 'Filters::StandardFilters',
-		     'Filters::FilterYam')   unless $this->{'yam'};
+    $this->addFilter('bio', 'Filters::StandardFilters',
+		     'Filters::FilterBIO',   $config) unless $this->{'bio'};
     $this->addFilter('txt', 'Filters::StandardFilters',
-		     'Filters::FilterTxt')   unless $this->{'txt'};
+		     'Filters::FilterTxt',   $config) unless $this->{'txt'};
+    $this->addFilter('xml', 'Filters::StandardFilters',
+		     'Filters::FilterXML',   $config) unless $this->{'xml'};
+
+    $this->addFilter('utf', 'Filters::ExtraFilters',
+		     'Filters::FilterUtf',   $config) unless $this->{'utf'};
+    $this->addFilter('utf_np', 'Filters::ExtraFilters',
+		     'Filters::FilterUtfNp', $config) unless $this->{'utf_np'};
+    $this->addFilter('via', 'Filters::ExtraFilters',
+		     'Filters::FilterVia',   $config) unless $this->{'via'};
+
 
     # Return the filter manager
     return $this;
@@ -55,18 +79,36 @@ sub new {
 
 # Add filter
 sub addFilter {
-    my ($this, $name, $file, $cclass) = @_;
-
-    die "Ilegal filter name $name\n" if $name =~ /^_/;
+    my ($this, $name, $file, $cclass, $config) = @_;
 
     eval "use $file";
-    die "Can't load filter file $file: $@" if $@;
+    if ($@) {
+	$config->{'_initErrors'} .=
+	    "* Can't load file $file\nfor filter $name.\n";
+	return;
+    }
+
+    if (!UNIVERSAL::can($cclass, 'new')) {
+	$config->{'_initErrors'} .=
+	    "* Can't call 'new' on class $cclass\nfor filter $name.\n";
+	return
+    }
+
+    $this->{$name} = [ $name, $file, $cclass ];
+}
+
+
+# Create a filter
+sub newFilter {
+    my ($this, $name, $marking) = @_;
     
-    eval {
-	$this->{$name} = $cclass->new();
-	$this->{"_$name"} = [ $name, $file, $cclass ];
-    };
-    die "Can't create object of filter class $cclass: $@" if $@;
+    my $cclass = $this->{$name}[2];
+
+    my $filter;
+    eval { $filter = $cclass->new($marking); };
+    die "Can't create filter $name of class $cclass: $@" if $@;
+
+    return $filter;
 }
 
 
@@ -74,7 +116,7 @@ sub addFilter {
 sub getFilters {
     my ($this) = @_;
 
-    return sort(grep { !/^_/ } keys(%{$this}));
+    return sort(keys(%{$this}));
 }
 
 
@@ -84,7 +126,7 @@ sub auRevoir {
 
     $handl->print(" <filters>\n");
     foreach my $filter ($this->getFilters()) {
-	my $info = $this->{"_$filter"};
+	my $info = $this->{$filter};
 	$handl->print( "  <filter name=\"$info->[0]\" file=\"$info->[1]\" class=\"$info->[2]\" />\n");
     }
     $handl->print(" </filters>\n");

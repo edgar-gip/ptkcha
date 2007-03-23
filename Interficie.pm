@@ -1,3 +1,21 @@
+# Copyright (C)  Edgar Gonzàlez i Pellicer
+#
+# This file is part of PTkChA
+#  
+# PTkChA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software 
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 # Interficie del PTkCha
 
 use strict;
@@ -33,7 +51,7 @@ package Interficie;
 our $singleton;
 
 # Versio
-our $version = '2.7.7';
+our $version = '2.8.0';
 
 # Constructor
 sub new {
@@ -183,7 +201,18 @@ sub new {
     # Instanciem el singleton
     $singleton = $this;
 
-    return bless($this, $classe);
+    # Bless
+    bless($this, $classe);
+
+    # Initialization errors
+    $win->idletasks();
+    if ($this->[16]->{'_initErrors'}) {
+	$this->mostrarError("Initialization Errors:\n" .
+			    $this->[16]->{'_initErrors'});
+    }
+
+    # Done
+    return $this;
 }
 
 
@@ -310,6 +339,9 @@ sub select {
 # Establir el text
 sub establirText {
     my ($this, $cadena) = @_;
+
+    # Cadena
+    # print $cadena;
 
     # Obtenim el marcatge
     my $marcatge = $this->[1]->getMarcatge();
@@ -524,7 +556,7 @@ sub buildCadena {
     my ($this, $refCadena, $key, $value, $idx) = @_;
 
     if ($key eq 'text') {
-	$$refCadena .= FilterLineByLine->prepararImpXML($value);
+	$$refCadena .= $value;
 
     } elsif ($key eq 'tagon') {
 	if ($value =~ /^chunk(\d+)$/) {
@@ -1042,7 +1074,7 @@ sub about {
     my ($this) = @_;
     
     $this->[3]->messageBox(-icon => 'info', -type => 'Ok',
-			   -message => "PTkChA v$version\nby Edgar Gonzalez i Pellicer\nTALP Research Center\nBarcelona, 2004-2006\negonzalez\@lsi.upc.edu",
+			   -message => "PTkChA v$version\nby Edgar Gonzalez i Pellicer\nTALP Research Center\nBarcelona, 2004-2007\negonzalez\@lsi.upc.edu",
 			   -title => 'About...');
 }
 

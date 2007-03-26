@@ -145,8 +145,9 @@ sub filterLine {
 
     # Just append, escaping things that would
     # mess the XML up
-    $cadena =~ s/&/"&x26;"/ge;
-    $cadena =~ s/</"&x3c;"/ge;
+    $cadena =~ s/&/"&#x26;"/ge;
+    $cadena =~ s/</"&#x3c;"/ge;
+    $cadena =~ s/([\x80-\xFF])/sprintf("&#x%02x;", ord($1))/ge;
     $this->[0] .= $cadena;
 }
 
@@ -164,7 +165,10 @@ our @ISA = qw( FilterLineByLine );
 sub filterLine {
     my ($this, $cadena) = @_;
 
-    # Just append -> We assume it is XML
+    # Fix this extended characters issue...
+    $cadena =~ s/([\x80-\xFF])/sprintf("&#x%02x;", ord($1))/ge;
+
+    # For the rest just append -> We assume it is XML
     $this->[0] .= $cadena;
 }
 

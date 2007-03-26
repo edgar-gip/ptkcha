@@ -1038,7 +1038,7 @@ sub reservePlugins {
 	    $this->[25]->add('cascade', -label => $plugins->[$i],
 			     -menu => $menu);
 	};
-	print "$@" if $@;
+	print $@ if $@;
     }
 }
 

@@ -64,14 +64,6 @@ sub new {
     $this->addFilter('xml', 'Filters::StandardFilters',
 		     'Filters::FilterXML',   $config) unless $this->{'xml'};
 
-    $this->addFilter('utf', 'Filters::ExtraFilters',
-		     'Filters::FilterUtf',   $config) unless $this->{'utf'};
-    $this->addFilter('utf_np', 'Filters::ExtraFilters',
-		     'Filters::FilterUtfNp', $config) unless $this->{'utf_np'};
-    $this->addFilter('via', 'Filters::ExtraFilters',
-		     'Filters::FilterVia',   $config) unless $this->{'via'};
-
-
     # Return the filter manager
     return $this;
 }

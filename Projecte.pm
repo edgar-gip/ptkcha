@@ -335,6 +335,9 @@ sub fixXMLOut {
 
     # Change ampersands
     $string =~ s/&/"&#x26;"/ge;
+
+    # Fix this extended characters issue...
+    $string =~ s/([\x80-\xFF])/sprintf("&#x%02x;", ord($1))/ge;
     
     # Non-changeable labels
     my %good =

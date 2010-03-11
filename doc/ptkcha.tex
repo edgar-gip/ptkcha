@@ -1,3 +1,21 @@
+% Copyright (C)  Edgar Gonzàlez i Pellicer
+%
+% This file is part of PTkChA
+%  
+% PTkChA is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or
+% (at your option) any later version.
+% 
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with this program; if not, write to the Free Software 
+% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 \documentclass{article}
 
 \usepackage{a4wide}
@@ -17,6 +35,8 @@
 
 \tableofcontents
 
+\newpage
+
 \section{What is PTkChA?}
 \ptkcha\ is a simple utility for annotating chunks in text
 files. It offers a GUI to aid in the task of annotating
@@ -26,6 +46,10 @@ It has been written using Perl/Tk by Edgar Gonzàlez i
 Pellicer\footnote{\url{http://www.lsi.upc.edu/~egonzalez}} at the TALP
 Research Center in Barcelona.
 
+\subsection{License}
+PTkChA is Free Software, and it is released under the General Public
+License (GPL). A copy of the GPL is bundled with the PTkChA source code.
+
 \section{Installation}
 \subsection{Requirements}
 \ptkcha\ requires the following components installed in your
@@ -33,16 +57,16 @@ system. We give the versions we have used, other versions will
 probably work.
 
 \begin{itemize}
-\item \textbf{Perl-5.8.4}, \url{http://www.perl.com}.
-\item \textbf{Expat-1.95.7}, \url{http://expat.sourceforge.net/}. 
+\item \textbf{Perl-5.8.8}, \url{http://www.perl.com}.
+\item \textbf{Expat-1.95.8}, \url{http://expat.sourceforge.net/}. 
 \item \textbf{Tk-804.027} Perl module, \url{http://search.cpan.org}.
 \item \textbf{XML-Parser-2.34} Perl module, \url{http://search.cpan.org}.
-\item \textbf{Tk-DirSelect-1.07} Perl module, \url{http://search.cpan.org}.
+\item \textbf{Tk-DirSelect-1.11} Perl module, \url{http://search.cpan.org}.
 \end{itemize}
 
 	
 \subsection{Installation}
-Download the last version (currently 2.7.7) from
+Download the last version (currently 2.8.0) from
 \url{http://www.lsi.upc.edu/~egonzalez/ptkcha.html}, and uncompress
 the tar file you will find there in a directory of your
 choice. \ptkcha\ only needs permission to write its configuration
@@ -145,6 +169,7 @@ A sample of a marking file is that of Figure \ref{fig:marking}.
  <plugin name="NE" class="PluginNE"
    file="Plugins::PluginNE::PluginNE" />
  <clustered />
+ <extra element="DOC"/>
 </marking>
 \end{verbatim}
 \end{minipage}
@@ -188,7 +213,17 @@ Directories} (see Section \ref{sec:project}). See section
 \item If the \textbf{clustered} element appears, then an equivalence
 relationship can be defined between the chunks in every document. In
 the output file, equivalent chunks will share a common SUBST.
+
+\item \textbf{extra} elements give other XML tags that might be
+present in the input files, and which should be preserved in the
+output files. If the \verb|<| character is found in an input file, it
+will be substituted by its XML escaped equivalent \verb|&x3c;|, unless
+it is part of one of an XML tag. The list of \textbf{extra} elements
+given is used to determine what actually is an XML tag.
 \end{itemize}
+
+Some sample markings are included with PTkChA, in folder
+\texttt{markings/}.
 
 \section{Usage}
 
@@ -481,6 +516,8 @@ using.
 A sample of the kind of functionalities plugins may provide appears in
 Sections \ref{sec:sumplugin} and \ref{sec:alignplugin}.
 
+A description of the interface to be followed by plugins will appear
+in a future version of the documentation.
 
 \section{Filters}
 \label{sec:filters}
@@ -490,24 +527,86 @@ in a flexible way. New filters can be added by implementing them as
 Perl modules and, by now, modifying the user configuration
 file. However, \ptkcha\ comes with a standard set of them.
 
+A description of the interface to be followed by filters will appear
+in a future version of the documentation.
+
 \subsection{Standard Filters}
+
+\begin{figure}[tb]
+\begin{center}
+\begin{tabular}{cc}
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+<marking element="phrase">
+ <attribute name="type">
+  <value v="NP"/>
+  <value v="PP"/>
+ </attribute>
+ <attribute name="prep">
+  <value v="of"/>
+  <value v="in"/>
+  <value v="to"/>
+ </attribute>
+</marking>
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.3\linewidth}
+\begin{verbatim}
+The   DT  B-NP
+cat   NN  I-NP
+eats  VBZ O
+tons  NNS B-NP
+of    IN  B-PP-of
+fish  NN  I-PP
+.     .   O
+
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\vspace{1cm}
+
+\begin{minipage}{.9\linewidth}
+\begin{verbatim}
+<phrase type="NP">The cat</phrase> eats <phrase type="NP">tons</phrase>
+<phrase type="PP" prep="of">of fish</phrase>.
+\end{verbatim}
+\end{minipage}
+\end{center}
+\caption{Marking, BIO input, and equivalent XML file.}
+\label{fig:bio}
+\end{figure}
+
 \begin{description}
+\item [bio] It imports files in BIO labeling format (such as the one
+  used usually in Named Entity Recognition and Classification). The
+  expected format of the input is a file with information in columns.
+  The first one of the columns is taken to be the word form, and the
+  last one the BIO label. The BIO label can contain extra information
+  separated by dashes (\verb|-|), which are taken to be the attributes
+  of the chunk, as given in the marking file. So, given the marking
+  and input files in the top of figure \ref{fig:bio}, the equivalent
+  XML file would be the one in the bottom of the figure.
 \item [txt] The simplest filter, it performs no conversion on the
 input files.
-\item [yam] It reads the output of the \textsc{YamCha} \cite{kudo01}
-chunker when applied to Named Entity Recognition and Classification
-with the MUC classes (Person, Organization, Location and Others).
 \item [utf] It reads files in Universal Transcript Format and leaves
 only the spoken words information.
 \item [utf\_np] It also reads Universal Transcript Format files, but in
 addition, removes capitalization and punctuation information.
+\item [xml] Reads XML files, trying to preserve the XML tags present
+  in them. If there already is some information about the marked chunk
+  in the file, it is imported.
+\item [yam] It reads the output of the \textsc{YamCha} \cite{kudo01}
+chunker when applied to Named Entity Recognition and Classification
+with the MUC classes (Person, Organization, Location and Others).
 \end{description}
 
 \appendix
 
 \section{Summary Annotation Framework}
 \subsection{CHIL Summary Creation Methodology}
-The \cite{fuentes05a} CHIL project deliverable defines a methodology
+The \cite{fuentes05chil} CHIL project deliverable defines a methodology
 for the creation of summaries.
 
 From the raw text, human annotators start by identifying relevant text
@@ -523,7 +622,7 @@ number of chunks from the relevant set.
 and summary creation following this methodology.
 
 In addition, to ease the creation of summaries of automatical
-transcripts, \cite{fuentes05a} contemplates the transferal of the
+transcripts, \cite{fuentes05chil} contemplates the transferal of the
 chunks selected for the construction of summaries on manual
 transcripts to automatical ones. This implies finding, for each chunk
 on the manual transcripts, the equivalent chunk in automatical ones,
@@ -633,7 +732,7 @@ In all cases, the chunks are transferred \textbf{from} the given files
 or project \textbf{to} the current file or project.
 
 \bibliographystyle{alpha}
-\bibliography{bibliografia}
+\bibliography{ptkcha}
 
 \end{document}
 

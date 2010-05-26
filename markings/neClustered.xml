@@ -1,0 +1,14 @@
+<marking element="ne">
+<attribute nom="classe">
+<value v="PERSON" />
+<value v="ORGANIZATION" />
+<value v="LOCATION" />
+<value v="OTHERS" />
+</attribute>
+<attribute nom="multiword">
+<value v="No" />
+<value v="Yes" />
+</attribute>
+<relation name="near" stereo="bi" />
+<clustered/>
+</marking>

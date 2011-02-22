@@ -1,27 +1,24 @@
 # Copyright (C)  Edgar Gonzàlez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Dialeg amb informacio d'un projecte
 
 use strict;
-
-use Tk::DirSelect;
-use Tk::FileSelect;
 
 package ProjectDialog;
 
@@ -34,10 +31,10 @@ sub new {
     # Cridem al constructor del dialeg
     my $dialeg = $pare->DialogBox(-title => 'Project',
 				  -buttons => [ "OK", 'Cancel' ]);
-    
+
     # Objecte this
     my $this = [ $dialeg, '', '', '', '', 'txt', 'txt' ];
-    
+
     # Construïm el contingut del Dialeg
     my $status = $dialeg->add('Label')->pack(-side => 'top');
     my $panell = $dialeg->add('Frame')->pack(-side => 'top');
@@ -76,15 +73,15 @@ sub new {
 	->grid(-column => 1, -row => 4, -sticky => 'new');
     $beFilt->Subwidget('entry')
 	->configure(-disabledforeground => 'black');
-    
+
     $panell->Label(-text => 'File Extension: ')
 	->grid(-column => 0, -row => 5, -sticky => 'ne');
     my $eExten = $panell->Entry(-width => 40, -textvariable => \$this->[6])
 	->grid(-column => 1, -row => 5, -sticky => 'new');
-    
+
     if ($project) {
 	my $err = $project->getStatus();
-	
+
 	# Clear sub
 	my $clearSub = sub { $status->configure(-text => '') };
 
@@ -156,16 +153,17 @@ sub canvi {
 
     my $result;
     if ($mode eq 'dir') {
-	$result = $this->[0]->DirSelect(-title => $miss)->Show($vInicial);
+	$result = $this->[0]->chooseDirectory(-title => $miss,
+					      -initialdir => $vInicial);
 
     } elsif ($vInicial =~ /(.+\/)[^\/]*$/) { # Es 'file' relatiu
-	$result = $this->[0]->FileSelect(-directory => $1)->Show();
+	$result = $this->[0]->getOpenFile(-initialdir => $1);
 
     } else {
-	$result = $this->[0]->FileSelect(-directory => '.')->Show();
+	$result = $this->[0]->getOpenFile(-initialdir => '.');
     }
 
-    if ($result) {
+    if (defined($result)) {
 	$this->[$pos] = $result;
     }
 }

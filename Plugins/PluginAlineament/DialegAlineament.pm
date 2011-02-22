@@ -1,19 +1,19 @@
 # Copyright (C)  Edgar Gonzàlez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Dialeg d'Alineament de Projectes
@@ -53,7 +53,7 @@ sub new {
     # Dialeg
     my $dialeg = $pare->DialogBox(-title => 'Alignment',
 				  -buttons => [ "OK", 'Cancel' ]);
-    
+
     # This
     my $this = [ $dialeg ];
 
@@ -95,7 +95,7 @@ sub new {
 				      -choices => [ '.txt', '.xml', '.sum', '<none>' ],
 				      -state => 'disabled')
 	->grid(-row => 2, -column => 0, -columnspan => 2, -sticky => 'new');
-    
+
 
     # Tercer frame
     my $frame3 = $dialeg->add('Frame',
@@ -114,11 +114,11 @@ sub new {
 				 -command => sub { $this->triarFitxer() },
 				 -state => 'disabled')
 	->grid(-row => 1, -column => 1, -sticky => 'ne');
-    
+
 
     # Afegim atributs
     push(@{$this}, 'projecte', $combo1,
-	 '', $combo2, $entry, 
+	 '', $combo2, $entry,
 	 '', $boto, '',
 	 $entryF, '', $botoF);
 
@@ -154,11 +154,11 @@ sub triarDirectori {
     my ($this) = @_;
 
     my $vInicial = $this->[6];
-    
-    my $result;
-    $result = $this->[0]->DirSelect(-title => 'Directory')->Show($vInicial);
 
-    if ($result) {
+    my $result = $this->[0]->chooseDirectory(-title => 'Directory',
+					     -initialdir => $vInicial);
+
+    if (defined($result)) {
 	$this->[6] = $result;
     }
 }
@@ -169,16 +169,16 @@ sub triarFitxer {
     my ($this) = @_;
 
     my $vInicial = $this->[10];
- 
+
     my $result;
     if ($vInicial =~ /(.+\/)[^\/]*$/) { # Es 'file' relatiu
-	$result = $this->[0]->FileSelect(-directory => $1)->Show();
-	
+	$result = $this->[0]->getOpenFile(-initialdir => $1)->Show();
+
     } else {
-	$result = $this->[0]->FileSelect(-directory => '.')->Show();
+	$result = $this->[0]->getOpenFile(-initialdir => '.')->Show();
     }
-    
-    if ($result) {
+
+    if (defined($result)) {
 	$this->[10] = $result;
     }
 }
@@ -203,7 +203,7 @@ sub setMode {
 	$this->[7]->configure(-state => 'normal');
 	$this->[9]->configure(-state => 'disabled');
 	$this->[11]->configure(-state =>'disabled');
-	
+
     } else { #this->[1] eq 'fitxer'
 	$this->[2]->configure(-state => 'disabled');
 	$this->[4]->configure(-state => 'disabled');

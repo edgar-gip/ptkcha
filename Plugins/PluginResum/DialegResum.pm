@@ -1,19 +1,19 @@
 # Copyright (C)  Edgar Gonzàlez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Dialeg Per a Resums
@@ -57,13 +57,13 @@ sub new {
 
     # Finestra
     my $dialeg = $fpare->Toplevel(-title => 'Summary');
-    
+
     # Creem l'objecte
     my $this = [ $dialeg, $main, 10, 0, '', '' ];
-    
+
     $dialeg->withdraw();
     $dialeg->protocol('WM_DELETE_WINDOW', sub { $this->sortir() });
-    
+
     # Linia superior
     $dialeg->Scale(-from => 0, -to => 100,
 		   -tickinterval => 0,
@@ -81,7 +81,7 @@ sub new {
 				   -variable => \$this->[3],
 				   -orient => 'horizontal')
 	->grid(-row => 0, -column => 2, -sticky => 'ne');
-    
+
     # Grid Central
     my $taula = $dialeg->Scrolled('Canvas',
 				  -scrollbars => 'e',
@@ -113,7 +113,7 @@ sub new {
     $dialeg->Button(-text => '...',
 		    -command => sub { $this->triarFile() })
 	->grid(-row => 4, -column => 2, -sticky => 'new');
-    
+
     # Botons
     $dialeg->Button(-text => 'Generate',
 		    -command => sub { $this->generar() })
@@ -125,7 +125,7 @@ sub new {
     my $dialegLlista = new DialegLlista($dialeg, 'Summary Generation',
 					30, [ "Yes", "No" ]);
 
-    push(@{$this}, $etiqueta, $scaleMots, $taula, 
+    push(@{$this}, $etiqueta, $scaleMots, $taula,
 	 $result, 0, undef,
 	 [], [], $etiqColor,
 	 $dialegLlista);
@@ -150,11 +150,11 @@ sub spin {
     }
 }
 
-    
+
 # Mostrar
 sub mostrar {
     my ($this) = @_;
-    
+
     # Actualitzem els controls
     $this->[10] = $this->[1]->getMotsDocument();
     $this->[6]->configure(-text => "% of $this->[10] words =");
@@ -164,7 +164,7 @@ sub mostrar {
     # Vells chunks
     my @vellsChunks;
     @vellsChunks = @{$this->[11]} if $this->[11];
-    
+
     # Obtenim els chunks
     my @chunks = $this->[1]->getChunks();
     $this->[11] = \@chunks;
@@ -209,7 +209,7 @@ sub mostrar {
 	$texte = substr($texte, 0, 20)."..." if length($texte) > 23;
 	$this->[8]->createText  (230, 10 + 20 * $i, -anchor => 'nw',
 				 -text => $texte);
-	
+
 	# #Words
 	$this->[8]->createText  (400, 10 + 20 * $i, -anchor => 'n',
 				 -text => $chunk->getNWords());
@@ -258,17 +258,17 @@ sub mostrar {
 # Triar File
 sub triarFile {
     my ($this) = @_;
-    
+
     my $vInicial = $this->[5];
-    
+
     my $result;
     if ($vInicial =~ /(.+\/)([^\/]*)$/) { # Es 'file' relatiu
-	$result = $this->[0]->FileSelect(-directory => $1)->Show();
+	$result = $this->[0]->getOpenFile(-initialdir => $1)->Show();
     } else {
-	$result = $this->[0]->FileSelect(-directory => '.')->Show();
+	$result = $this->[0]->getOpenFile(-initialdir => '.')->Show();
     }
-    
-    if ($result) {
+
+    if (defined($result)) {
 	$this->[5] = $result;
     }
 }
@@ -290,7 +290,7 @@ sub autoResum {
 
     # Grups ja sel·leccionats
     my %grups;
-    
+
     for (my $pes = 1; $pes < 4; ++$pes) {
 	my $i = 0;
 	foreach my $chunk (@{$this->[11]}) {
@@ -315,12 +315,12 @@ sub sortir {
 
     $this->grabRelease();
     $this->withdraw();
-    
+
     # Netegem l'objecte
     @{$this->[13]} = ();
     $this->[8]->delete('all');
     $this->[8]->yviewMoveto(0.0);
-	
+
     # No netegem els chunks
     # $this->[11] = undef;
     # @{$this->[12]} = ();
@@ -330,7 +330,7 @@ sub sortir {
 # Canviar Resum
 sub canviarResum {
     my ($this) = @_;
-    
+
     my $totalMots = 0;
 
     # Netegem el text
@@ -393,7 +393,7 @@ sub generar {
 		$d->afegirElement(" appears more than once");
 		$error = 1;
 	    }
-	    
+
 	    # Dependencies
 	    my $dep = $chunk->getSortints();
 	    for (my $j = 0; $j < @{$dep}; $j += 2) {
@@ -446,4 +446,4 @@ sub missatge {
 
 # Retornem Cert
 1;
- 
+

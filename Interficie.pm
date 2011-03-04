@@ -1,19 +1,19 @@
 # Copyright (C)  Edgar Gonzàlez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Interficie del PTkCha
@@ -51,7 +51,7 @@ package Interficie;
 our $singleton;
 
 # Versio
-our $version = '2.8.0';
+our $version = '2.8.1';
 
 # Constructor
 sub new {
@@ -62,7 +62,7 @@ sub new {
 
     # Creem la finestra Principal
     my $win = new MainWindow(-title => "PTkChA : Perl/Tk Chunk Annotator -- v$version");
-    
+
     # Creem els controls, en un principi tots Disableds
     my $infoProject = new InfoProject($this, $win);
     $infoProject->pack(-side => 'top', -fill => 'x');
@@ -103,7 +103,7 @@ sub new {
 		   -command => sub { $this->revert() });
     $fileMenu->add('command', -label => 'Initial Version',
 		   -command => sub { $this->versioInicial() });
-    $fileMenu->add('separator');    
+    $fileMenu->add('separator');
     $fileMenu->add('command', -label => 'Default Values...',
 		   -command => sub { $this->changeDefaults() },
 		   -state => 'disabled');
@@ -119,7 +119,7 @@ sub new {
     $windowMenu->add('command', -label => 'Chart',
 		     -command => sub { $this->mostraLlegenda() });
     $barra->add('cascade', -label => 'Windows', -menu => $windowMenu);
-    
+
     # Menu Plugin
     # (Inicialment buit)
     my $pluginMenu = $barra->Menu(-tearoff => 0);
@@ -129,7 +129,7 @@ sub new {
     my $helpMenu = $barra->Menu(-tearoff => 0);
     $helpMenu->add('command', -label => 'About...',
 		   -command => sub { $this->about() });
-    $barra->add('cascade', -label => 'Help', -menu => $helpMenu);    
+    $barra->add('cascade', -label => 'Help', -menu => $helpMenu);
 
     $win->configure(-menu => $barra);
 
@@ -157,7 +157,7 @@ sub new {
     # 8: projectManager
     # 9: projectManagerDialog
     # 10:(unused)
-    # 11:fitxerActual 
+    # 11:fitxerActual
     # 12:llistaChunks
     # 13:cursorMode
     # 14:cursorDefault
@@ -186,7 +186,7 @@ sub new {
 		 [], $pluginMenu, undef,
 		 $fileMenu, $filterManager, undef
 	       );
-    
+
     # Binding
     $centralText->bind('<Return>',   sub { $this->nouChunk(); });
     $centralText->bind('<Button-3>', sub { $this->nouChunk(); });
@@ -194,7 +194,7 @@ sub new {
     $centralText->bind('<Escape>',   sub { $this->cancel(); });
     $centralText->bind('Tk::ROText', '<Button-3>', '');
     $centralText->bind('Tk::ROText', '<Shift-Button-1>', '');
-    
+
     # WM
     $win->protocol('WM_DELETE_WINDOW', sub { $this->sortir() });
 
@@ -223,7 +223,7 @@ sub new {
 # Manegar els projectes
 sub manageProjects {
     my ($this) = @_;
-    
+
     if ($this->[9]) {
   	$this->[9]->deiconify();
   	$this->[9]->raise();
@@ -275,10 +275,10 @@ sub updateInterficie {
 
     # Si els controls estan deshabilitats, els habilitem
     $this->[2]->configure(-state => 'normal');
-    
+
     # Mode normal
     $this->changeMode('normal');
-    
+
     # Actualitzem els controls
     # Info Projecte
     $this->[4]->actualitzar($projecte);
@@ -353,10 +353,10 @@ sub establirText {
 
     # Nombre de paraules
     $this->[22] = 0;
-    
+
     # Substos
     my @substos  = ();
-    
+
     # Relacions Pendents
     my %pendents = ();
 
@@ -374,7 +374,7 @@ sub establirText {
 	$this->[4]->setNombreMots('There are no');
 	return;
     }
-    
+
     # Anem recorrent el contingut
     my $contingut = $arbre->[1];
     shift(@{$contingut});
@@ -391,35 +391,35 @@ sub establirText {
 	    foreach my $mot (split(/ /, $info)) {
 		++$this->[22] if $mot;
 	    }
-	    
+
 	} elsif ($tag eq $etiqueta) {
 	    # Un Chunk!!!
 
 	    # N'extraiem la informacio
 	    my $atributs = shift(@{$info});
 	    my ($relacions, $text);
-	    
+
 	    # Recorrem l'Arbre Menor
 	    while (@{$info}) {
 		my ($tagC, $infoC) = (shift(@{$info}), shift(@{$info}));
 		if ($tagC eq 'rels') {
 		    $relacions = $infoC;
-		    
+
 		} elsif ($tagC eq '0') {
 		    $text .= $infoC;
 		}
 	    }
-	    
+
 	    # Text buit
 	    next if !$text;
-	    
+
 	    # Creem el nou chunk
 	    my $chunk   = $this->[12]->newChunkSeq();
 	    my $freePos = $chunk->getPos();
-	    
+
 	    # Aqui comença el tag
 	    $this->[2]->insert('end', $text, "chunk$freePos");
-	    
+
 	    # Marquem els bindings del tag
 	    $this->[2]->tagBind("chunk$freePos", '<Button-3>',
 				[ sub { $this->botoDret($chunk, @_) },
@@ -473,7 +473,7 @@ sub establirText {
 		} else {
 		    # Es un Chunk que hem esborrat
 		    splice(@{$llista}, $i, 2);
-		    
+
 		    # Tornem a fer el mateix
 		    $i -= 2;
 		}
@@ -495,10 +495,10 @@ sub establirText {
 
     # Mode de visio: subst
     # $this->[21] = -1;
-    
+
     # Nombre de mots
     $this->[4]->setNombreMots($this->[22]);
-}	 
+}
 
 
 # Sortir del programa
@@ -510,10 +510,18 @@ sub sortir {
     $this->freePlugins();
 
     # Guardem el Config file
-    $this->[16]->auRevoir();
+    eval {
+	$this->[16]->auRevoir();
+    };
+
+    # Error?
+    if ($@) {
+	my $error = $@; chomp($error);
+	$this->mostrarError("$error: Settings not saved.\n");
+    }
 
     # Mostrem missatge tranquilitzador
-    print "If it crashes here, nothing happens\n";
+    # print "If it crashes here, nothing happens\n";
 
     exit(0);
 }
@@ -532,7 +540,7 @@ sub saveCurrent {
     # Obtenim la informacio
     my $cadena = '';
     $this->getTextActual(\$cadena);
-    
+
     # Li diem al projecte que ho guardi
     $this->[1]->saveFile($this->[11], $cadena);
 
@@ -545,7 +553,7 @@ sub saveCurrent {
 sub getTextActual {
     my ($this, $refCadena) = @_;
 
-    $this->[2]->dump('-text', '-tag', 
+    $this->[2]->dump('-text', '-tag',
 		     -command => sub { $this->buildCadena($refCadena, @_); },
 		     '1.0', 'end');
 }
@@ -565,7 +573,7 @@ sub buildCadena {
 		$$refCadena .= $this->[1]->getMarcatge()->buildCadena($chunk);
 	    }
 	}
-	
+
     } elsif ($key eq 'tagoff') {
 	$$refCadena .= '</'.$this->[1]->getMarcatge()->getEtiqueta().'>' if $value =~ /^chunk\d+$/;
     }
@@ -587,18 +595,18 @@ sub nouChunk {
 	$this->changeMode('normal');
 	return;
     }
-    
+
     # Marquem amb el tag Chungo
     # Trobem el que esta marcat
     my @rang = $this->[2]->tagRanges('sel');
     return unless @rang;
-    
+
     # Ens expandim?
     @rang = $this->expandirSeleccio(@rang)
 	if $this->[16]->{'SelExp'};
-    
+
     return if $this->[2]->compare($rang[0], '>=', $rang[1]);
-	
+
     # Comprovem el solapament amb altres chunks
     my @idx1 = split(/\./, $rang[0]);
     my @idx2 = split(/\./, $rang[1]);
@@ -608,11 +616,11 @@ sub nouChunk {
 
     if (!$solapament) {
 	# Afegim un chunk!
-	
+
 	# Creem el nou chunk
 	my $chunk   = $this->[12]->newChunkSeq();
 	my $freePos = $chunk->getPos();
-	
+
 	$this->[2]->tagAdd("chunk$freePos", $rang[0], $rang[1]);
 	$this->[2]->tagBind("chunk$freePos", '<Button-3>',
 			    [ sub { $this->botoDret($chunk, @_) },
@@ -633,7 +641,7 @@ sub nouChunk {
 				$this->[2]->configure(-cursor => $this->[13]);
 			    });
 	my $p = $freePos;
-	
+
 	# Assignem el rang
 	$chunk->assignarRang($this->[2]->get($rang[0], $rang[1]), @rang);
 	$chunk->atributsPerDefecte($this->[26]);
@@ -644,19 +652,19 @@ sub nouChunk {
 	    $color = $chunk->getColor();
 	} else {
 	    $color = $this->[1]->getMarcatge()
-		->colorAtribut($this->[21], 
+		->colorAtribut($this->[21],
 			       $chunk->getAtributs()->[$this->[21]]);
 	}
 	$this->[2]->tagConfigure("chunk$freePos",
 				 -foreground => 'white',
 				 -background => $color);
-	
+
 	# Renumerem
 	$this->[12]->renumerarChunks();
 
 	# Actualitzem el comptador
 	$this->[23]->updateAtribut() if $this->[23];
-	
+
 	# Indiquem que ha estat modificat
 	$this->[17] = 1;
 
@@ -665,12 +673,12 @@ sub nouChunk {
 
 	# Traiem el tag antic
 	$this->[2]->tagRemove("chunk$quin->[0]", $quin->[3], $quin->[4]);
-	
+
 	# Actualitzem la Info
 	my ($iniX, $fiX) = ("$iniNou->[0].$iniNou->[1]",
 			  "$fiNou->[0].$fiNou->[1]");
 	$quin->assignarRang($this->[2]->get($iniX, $fiX), $iniX, $fiX);
-	
+
 	# Fem més petit o més gran
 	$this->[2]->tagAdd("chunk$quin->[0]", $iniX, $fiX);
 
@@ -687,13 +695,13 @@ sub nouChunk {
 # Expandir la seleccio
 sub expandirSeleccio {
     my ($this, @rang) = @_;
-    
+
     while ($this->[2]->compare($rang[0], '<', 'end') &&
 	   $this->[2]->get($rang[0]) =~ /\s/) {
 	$rang[0] = $this->[2]->index("$rang[0] + 1 c");
     }
     $rang[0] = $this->[2]->index("$rang[0] wordstart");
-    
+
     if ($this->[2]->get("$rang[1] - 1 c") =~ /\s/) {
 	while ($this->[2]->compare($rang[1], '>', $rang[0]) &&
 	       $this->[2]->get("$rang[1] - 1 c") =~ /\s/) {
@@ -760,19 +768,19 @@ sub clickar {
 	# Comprovem que no siguin el mateix, ja
 	my $chunk1 = $this->[7]->getActiveChunk();
 	my ($g1, $g2) = map { $_->getInternalSubst() } ($chunk1, $chunk2);
-	
+
 	if ($g1 != $g2) {
 	    # Nou color, nou grup
 	    $this->[12]->annexionar($g1, $g2, $chunk2->getColor(),
 				    $this->[2]);
-	    
+
 	    # Renumerem els Chunks
 	    $this->[12]->renumerarChunks();
-	    
+
 	    # Indiquem que ha estat modificat
 	    $this->[17] = 1;
 	}
-	
+
 	# Indiquem que no busquem companyia
 	$this->changeMode('normal');
 
@@ -784,7 +792,7 @@ sub clickar {
 	if ($chunk1 != $chunk2) {
 	    # Afegim la relacio
 	    $chunk1->addRel($nom, $ste, $chunk2);
-		
+
 	    # Indiquem que ha estat modificat
 	    $this->[17] = 1;
 	}
@@ -828,7 +836,7 @@ sub changeMode {
 	} elsif ($mode eq 'triarSubst') {
 	    $this->[18] = 'plus';
 	    $this->[13] = 'pirate';
-	    
+
 	} elsif ($mode eq 'triarRel') {
 	    $this->[18] = 'sizing';
 	    $this->[13] = 'X_cursor';
@@ -869,14 +877,14 @@ sub opcions {
 # Revertir
 sub revert {
     my ($this, $force) = @_;
-    
+
     # Si no ha estat modificat o no està segur, retornar
     return unless $force || $this->[17];
     return unless $force || $this->confirmacio("Lose the changes done?");
-    
+
     # Mode normal
     $this->changeMode('normal');
-    
+
     # Esborrem el contingut del text central
     $this->[2]->delete("1.0", 'end');
 
@@ -892,13 +900,13 @@ sub revert {
 # Versio Inicial
 sub versioInicial {
     my ($this, $force) = @_;
-    
+
     # Si no s'està segur, retornar
     return unless $this->[11] && $this->confirmacio("Lose ALL changes done?");
-    
+
     # Mode normal
     $this->changeMode('normal');
-    
+
     # Esborrem el contingut del text central
     $this->[2]->delete("1.0", 'end');
 
@@ -929,7 +937,7 @@ sub carregarVista {
 
     # Obtenir el marcatge
     my $marcatge = $this->[1]->getMarcatge();
-    
+
     # Es clustered?
     if ($marcatge->isClustered()) {
 	$this->[20]->add('radiobutton', -label => 'subst',
@@ -960,7 +968,7 @@ sub carregarVista {
 # Canviar vista
 sub canviarVista {
     my ($this) = @_;
-    
+
     my $nAtribut = $this->[21];
     if ($nAtribut == -1) {
 	# Recorrem els chunks i els reassignem el seu color
@@ -1014,7 +1022,7 @@ sub mostraLlegenda {
 	$this->[23]->protocol('WM_DELETE_WINDOW', sub { $this->[23]->destroy(); $this->[23] = undef });
     }
 }
-    
+
 
 # Reservar els plugins
 sub reservePlugins {
@@ -1030,10 +1038,10 @@ sub reservePlugins {
 
 	    eval "use $plugins->[$i+2]";
 	    die if $@;
-	    
+
 	    my $p = ($plugins->[$i+1])->new($this);
 	    my $menu = $p->makeMenu($this->[25]);
-	    
+
 	    push(@{$this->[24]}, $p);
 	    $this->[25]->add('cascade', -label => $plugins->[$i],
 			     -menu => $menu);
@@ -1050,7 +1058,7 @@ sub freePlugins {
     foreach my $plugin (@{$this->[24]}) {
 	$plugin->free();
     }
-    
+
     # Buidem la llista
     @{$this->[24]} = ();
 
@@ -1072,10 +1080,14 @@ sub getProjectManager { return $_[0]->[8]; }
 # About
 sub about {
     my ($this) = @_;
-    
-    $this->[3]->messageBox(-icon => 'info', -type => 'Ok',
-			   -message => "PTkChA v$version\nby Edgar Gonzalez i Pellicer\nTALP Research Center\nBarcelona, 2004-2007\negonzalez\@lsi.upc.edu",
-			   -title => 'About...');
+
+    $this->[3]->
+	messageBox(-icon => 'info', -type => 'Ok',
+		   -message => ("PTkChA v$version\n" .
+				"by Edgar Gonzalez i Pellicer\n" .
+				"TALP Research Center\nBarcelona, 2004-2011\n" .
+				"egonzalez\@lsi.upc.edu"),
+		   -title => 'About...');
 }
 
 

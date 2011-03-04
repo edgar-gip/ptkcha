@@ -1,19 +1,19 @@
-# Copyright (C)  Edgar GonzÃ lez i Pellicer
+# Copyright (C)  Edgar Gonzàlez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Configuration file
@@ -28,31 +28,41 @@ use ProjectManager;
 
 package ConfigFile;
 
+# Application data folder
+# Static helper
+sub appdata {
+    exists($ENV{$_}) and return $ENV{$_}
+        foreach qw( LOCALAPPDATA APPDATA HOME HOMEPATH );
+    die "Could not determine application data directory\n";
+}
+
 # Constructor
 sub new {
     my ($class, $file) = @_;
-    
-    # Default value for file
-    $file ||= "$ENV{HOME}/.ptkcha.xml";
 
     # Object
     my $this = {};
-    
+
     eval {
+	# Default value for file
+	$file ||= appdata() . '/.ptkcha.xml';
+
+	# Parser
 	my $parser = new XML::Parser(Style => 'Tree');
 
+	# Parse
 	my $tree;
 	eval {
 	    $tree = $parser->parsefile($file);
 	};
 	die "$file is not a valid XML file: $@" if $@;
-	
+
 	# Check root
 	die "$file does not contain an XML <config>\n"
 	    if $tree->[0] ne 'config';
 	die "$file is not XML <config> version 1.1.xml\n"
 	    if shift(@{$tree->[1]})->{'version'} ne '1.1.xml';
-	
+
 	# Branch of the Project Manager
 	my $pmTree;
 	my $fmTree;
@@ -63,10 +73,10 @@ sub new {
 
 	    if ($type eq 'option') {
 		$this->{$content->[0]{'name'}} = $content->[0]{'value'};
-		
+
 	    } elsif ($type eq 'filters') {
 		$fmTree = $content;
-		
+
 	    } elsif ($type eq 'projects') {
 		$pmTree = $content;
 	    }
@@ -77,7 +87,7 @@ sub new {
 
 	# Then, check for the filter manager
 	$this->{'_filterManager'} = new FilterManager($fmTree, $this);
-	    
+
 	# Parse the project manager
 	$this->{'_projectManager'} =
 	    new ProjectManager($pmTree, $this->{'_filterManager'});
@@ -87,10 +97,10 @@ sub new {
 	    print "Initialization Errors:\n" . $this->{'_initErrors'};
 	}
     };
-    
+
     if ($@) {
 	# Couldn't parse the configuration file
-	
+
 	# Default options
 	$this->{'SelExp'} = 1;  # Selection Expansion
 	$this->{'ForWri'} = 0;  # Forced Writing
@@ -103,8 +113,8 @@ sub new {
 	$this->{'_filterManager'} = new FilterManager(undef, $this);
 
 	# Empty project manager
-	$this->{'_projectManager'} = new ProjectManager([],
-							$this->{'_filterManager'});
+	$this->{'_projectManager'} =
+	    new ProjectManager([], $this->{'_filterManager'});
     }
 
     return bless($this, $class);
@@ -132,11 +142,13 @@ sub auRevoir {
     my ($this, $file) = @_;
 
     # Default value for file
-    $file ||= "$ENV{HOME}/.ptkcha.xml";
+    $file ||= appdata() . '/.ptkcha.xml';
 
+    # Open
     my $fout = new IO::File("> $file")
 	or die "Can't open output configuration file $file\n";
 
+    # Write header and options
     $fout->print("<config version=\"1.1.xml\">\n");
     while (my ($opt, $val) = each(%{$this})) {
 	if ($opt !~ /_/) {
@@ -144,10 +156,11 @@ sub auRevoir {
 	}
     }
 
-    # Special
+    # Filter and project manager
     $this->{'_filterManager'}->auRevoir($fout);
     $this->{'_projectManager'}->auRevoir($fout);
 
+    # Footer
     $fout->print("</config>\n");
 }
 
@@ -155,4 +168,4 @@ sub auRevoir {
 # Return true
 1;
 
-    
+

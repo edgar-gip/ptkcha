@@ -1,6 +1,9 @@
-all: fig_all ptkcha.ps.gz
+all: fig_all ptkcha.ps.gz ptkcha.pdf
 
 # LaTeX
+%.pdf: %.dvi
+	dvipdf $<
+
 %.ps.gz: %.ps
 	gzip -f $<
 
@@ -11,12 +14,12 @@ all: fig_all ptkcha.ps.gz
 	wraplatex $<
 
 # Clean
-clean:
+clean: fig_clean
 	rm -f ptkcha.ps.gz ptkcha.log ptkcha.dvi ptkcha.aux
 
 # fig/ subdir
 fig_all:
-	cd fig; $(MAKE)
+	$(MAKE) -C fig
 
 fig_clean:
-	cd fig; $(MAKE) clean
+	$(MAKE) -C fig clean

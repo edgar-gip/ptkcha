@@ -1,4 +1,4 @@
-# Copyright (C)  Edgar Gonzàlez i Pellicer
+# Copyright (C) 2005-2011  Edgar GonzÃ lez i Pellicer
 #
 # This file is part of PTkChA
 #
@@ -25,7 +25,6 @@ use XML::Parser;
 use FilterManager;
 use ProjectManager;
 
-
 package ConfigFile;
 
 # Application data folder
@@ -44,82 +43,81 @@ sub new {
     my $this = {};
 
     eval {
-	# Default value for file
-	$file ||= appdata() . '/.ptkcha.xml';
+        # Default value for file
+        $file ||= appdata() . '/.ptkcha.xml';
 
-	# Parser
-	my $parser = new XML::Parser(Style => 'Tree');
+        # Parser
+        my $parser = new XML::Parser(Style => 'Tree');
 
-	# Parse
-	my $tree;
-	eval {
-	    $tree = $parser->parsefile($file);
-	};
-	die "$file is not a valid XML file: $@" if $@;
+        # Parse
+        my $tree;
+        eval {
+            $tree = $parser->parsefile($file);
+        };
+        die "$file is not a valid XML file: $@" if $@;
 
-	# Check root
-	die "$file does not contain an XML <config>\n"
-	    if $tree->[0] ne 'config';
-	die "$file is not XML <config> version 1.1.xml\n"
-	    if shift(@{$tree->[1]})->{'version'} ne '1.1.xml';
+        # Check root
+        die "$file does not contain an XML <config>\n"
+            if $tree->[0] ne 'config';
+        die "$file is not XML <config> version 1.1.xml\n"
+            if shift(@{$tree->[1]})->{'version'} ne '1.1.xml';
 
-	# Branch of the Project Manager
-	my $pmTree;
-	my $fmTree;
+        # Branch of the Project Manager
+        my $pmTree;
+        my $fmTree;
 
-	while (@{$tree->[1]}) {
-	    my $type    = shift(@{$tree->[1]});
-	    my $content = shift(@{$tree->[1]});
+        while (@{$tree->[1]}) {
+            my $type    = shift(@{$tree->[1]});
+            my $content = shift(@{$tree->[1]});
 
-	    if ($type eq 'option') {
-		$this->{$content->[0]{'name'}} = $content->[0]{'value'};
+            if ($type eq 'option') {
+                $this->{$content->[0]{'name'}} = $content->[0]{'value'};
 
-	    } elsif ($type eq 'filters') {
-		$fmTree = $content;
+            } elsif ($type eq 'filters') {
+                $fmTree = $content;
 
-	    } elsif ($type eq 'projects') {
-		$pmTree = $content;
-	    }
-	}
+            } elsif ($type eq 'projects') {
+                $pmTree = $content;
+            }
+        }
 
-	# Init errors
-	$this->{'_initErrors'} = '';
+        # Init errors
+        $this->{'_initErrors'} = '';
 
-	# Then, check for the filter manager
-	$this->{'_filterManager'} = new FilterManager($fmTree, $this);
+        # Then, check for the filter manager
+        $this->{'_filterManager'} = new FilterManager($fmTree, $this);
 
-	# Parse the project manager
-	$this->{'_projectManager'} =
-	    new ProjectManager($pmTree, $this->{'_filterManager'});
+        # Parse the project manager
+        $this->{'_projectManager'} =
+            new ProjectManager($pmTree, $this->{'_filterManager'});
 
-	# Init errors?
-	if ($this->{'_initErrors'}) {
-	    print "Initialization Errors:\n" . $this->{'_initErrors'};
-	}
+        # Init errors?
+        if ($this->{'_initErrors'}) {
+            print "Initialization Errors:\n" . $this->{'_initErrors'};
+        }
     };
 
     if ($@) {
-	# Couldn't parse the configuration file
+        # Couldn't parse the configuration file
 
-	# Default options
-	$this->{'SelExp'} = 1;  # Selection Expansion
-	$this->{'ForWri'} = 0;  # Forced Writing
-	$this->{'IncDir'} = ''; # Extra @INC Dirs
+        # Default options
+        $this->{'SelExp'} = 1;  # Selection Expansion
+        $this->{'ForWri'} = 0;  # Forced Writing
+        $this->{'IncDir'} = ''; # Extra @INC Dirs
 
-	# Init errors
-	$this->{'_initErrors'} = '';
+        # Init errors
+        $this->{'_initErrors'} = '';
 
-	# Empty filter manager
-	$this->{'_filterManager'} = new FilterManager(undef, $this);
+        # Empty filter manager
+        $this->{'_filterManager'} = new FilterManager(undef, $this);
 
-	# Empty project manager
-	$this->{'_projectManager'} =
-	    new ProjectManager([], $this->{'_filterManager'});
+        # Empty project manager
+        $this->{'_projectManager'} =
+            new ProjectManager([], $this->{'_filterManager'});
     }
 
     return bless($this, $class);
 }
-
 
 # Get the project manager
 sub getProjectManager {
@@ -128,14 +126,12 @@ sub getProjectManager {
     return $this->{'_projectManager'};
 }
 
-
 # Get the filter manager
 sub getFilterManager {
     my ($this) = @_;
 
     return $this->{'_filterManager'};
 }
-
 
 # Good bye
 sub auRevoir {
@@ -146,14 +142,14 @@ sub auRevoir {
 
     # Open
     my $fout = new IO::File("> $file")
-	or die "Can't open output configuration file $file\n";
+        or die "Can't open output configuration file $file\n";
 
     # Write header and options
     $fout->print("<config version=\"1.1.xml\">\n");
     while (my ($opt, $val) = each(%{$this})) {
-	if ($opt !~ /_/) {
-	    $fout->print(" <option name=\"$opt\" value=\"$val\" />\n");
-	}
+        if ($opt !~ /_/) {
+            $fout->print(" <option name=\"$opt\" value=\"$val\" />\n");
+        }
     }
 
     # Filter and project manager
@@ -164,8 +160,5 @@ sub auRevoir {
     $fout->print("</config>\n");
 }
 
-
 # Return true
 1;
-
-

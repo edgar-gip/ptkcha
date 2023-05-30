@@ -1,19 +1,19 @@
-# Copyright (C)  Edgar Gonzàlez i Pellicer
+# Copyright (C) 2005-2011  Edgar Gonzàlez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 use strict;
@@ -43,15 +43,14 @@ sub new {
 
     my $this = [];
     my $canvas = $pare->Scrolled('Canvas', -scrollbars => 'e',
-				 -width => 100);
+                                 -width => 100);
     my $menu   = $canvas->Menu(-tearoff => 0, -title => 'Relacio');
     $menu->add('command', -label => 'Delete Relation',
-	       -command => sub { $this->eliminarRel(); });
+               -command => sub { $this->eliminarRel(); });
 
     push(@{$this}, $canvas, $menu, undef, undef, undef, undef, undef, $main);
     return bless($this, $classe);
 }
-
 
 # Actualitzar
 sub actualitzar {
@@ -62,13 +61,12 @@ sub actualitzar {
 
     # Creem el quadre que correspon al Chunk
     my $idRec = $this->[0]->createRectangle(40, 20, 90, 40,
-					    -outline => 'black',
-					    -fill => $chunk->getColor());
+                                            -outline => 'black',
+                                            -fill => $chunk->getColor());
     $this->[0]->createText(65, 30, -anchor => 'center',
-			   -fill => 'white', -text => $chunk->getId());
+                           -fill => 'white', -text => $chunk->getId());
 
     $this->[0]->bind($idRec, '<Button-1>', sub { $this->zoom($chunk); });
-    
 
     # Anem creant els quadres de les relacions
     my $xrel = 20;
@@ -77,85 +75,84 @@ sub actualitzar {
     # Entrants
     my $llistaRel = $chunk->getEntrants();
     for (my $i = 0; $i < @{$llistaRel}; $i += 2) {
-	$idRec = $this->[0]->createRectangle(40, $yrel, 90, $yrel + 20,
-					     -outline => 'black',
-					     -fill => $llistaRel->[$i+1]->getColor());
-	$this->[0]->createText(65, $yrel + 10, -anchor => 'center',
-			       -fill => 'white',
-			       -text => $llistaRel->[$i+1]->getId());
-	$this->[0]->createText(42, $yrel - 1, -anchor => 'sw',
-			       -fill => 'black',
-			       -text => $llistaRel->[$i]);
-	$this->[0]->createLine(40, 15 + $xrel, $xrel, 15 + $xrel,
-			       $xrel, $yrel + 10, 40, $yrel + 10,
-			       -fill => 'blue', -arrow => 'first');
+        $idRec = $this->[0]->createRectangle(40, $yrel, 90, $yrel + 20,
+                                             -outline => 'black',
+                                             -fill => $llistaRel->[$i+1]->getColor());
+        $this->[0]->createText(65, $yrel + 10, -anchor => 'center',
+                               -fill => 'white',
+                               -text => $llistaRel->[$i+1]->getId());
+        $this->[0]->createText(42, $yrel - 1, -anchor => 'sw',
+                               -fill => 'black',
+                               -text => $llistaRel->[$i]);
+        $this->[0]->createLine(40, 15 + $xrel, $xrel, 15 + $xrel,
+                               $xrel, $yrel + 10, 40, $yrel + 10,
+                               -fill => 'blue', -arrow => 'first');
 
-	my $chunkD = $llistaRel->[$i + 1];
-	my $nom    = $llistaRel->[$i];
-	$this->[0]->bind($idRec, '<Button-1>', sub { $this->zoom($chunkD); });
-	$this->[0]->bind($idRec, '<Button-3>',
-			 [ sub { $this->prepararEliminar($nom, 'in', $chunkD, @_); },
-			   Tk::Ev('X'), Tk::Ev('Y') ]);
-	
-	$xrel -= 1;
-	$yrel += 40;
+        my $chunkD = $llistaRel->[$i + 1];
+        my $nom    = $llistaRel->[$i];
+        $this->[0]->bind($idRec, '<Button-1>', sub { $this->zoom($chunkD); });
+        $this->[0]->bind($idRec, '<Button-3>',
+                         [ sub { $this->prepararEliminar($nom, 'in', $chunkD, @_); },
+                           Tk::Ev('X'), Tk::Ev('Y') ]);
+
+        $xrel -= 1;
+        $yrel += 40;
     }
 
     # Sortints
     $llistaRel = $chunk->getSortints();
     for (my $i = 0; $i < @{$llistaRel}; $i += 2) {
-	$idRec = $this->[0]->createRectangle(40, $yrel, 90, $yrel + 20,
-					     -outline => 'black',
-					     -fill => $llistaRel->[$i+1]->getColor());
-	$this->[0]->createText(65, $yrel + 10, -anchor => 'center',
-			       -fill => 'white',
-			       -text => $llistaRel->[$i+1]->getId());
-	$this->[0]->createText(42, $yrel - 1, -anchor => 'sw',
-			       -fill => 'black',
-			       -text => $llistaRel->[$i]);
-	$this->[0]->createLine(40, 15 + $xrel, $xrel, 15 + $xrel,
-			       $xrel, $yrel + 10, 40, $yrel + 10,
-			       -fill => 'red', -arrow => 'last');
+        $idRec = $this->[0]->createRectangle(40, $yrel, 90, $yrel + 20,
+                                             -outline => 'black',
+                                             -fill => $llistaRel->[$i+1]->getColor());
+        $this->[0]->createText(65, $yrel + 10, -anchor => 'center',
+                               -fill => 'white',
+                               -text => $llistaRel->[$i+1]->getId());
+        $this->[0]->createText(42, $yrel - 1, -anchor => 'sw',
+                               -fill => 'black',
+                               -text => $llistaRel->[$i]);
+        $this->[0]->createLine(40, 15 + $xrel, $xrel, 15 + $xrel,
+                               $xrel, $yrel + 10, 40, $yrel + 10,
+                               -fill => 'red', -arrow => 'last');
 
-	my $chunkD = $llistaRel->[$i + 1];
-	my $nom    = $llistaRel->[$i];
-	$this->[0]->bind($idRec, '<Button-1>', sub { $this->zoom($chunkD); });
-	$this->[0]->bind($idRec, '<Button-3>',
-			 [ sub { $this->prepararEliminar($nom, 'out', $chunkD, @_); },
-			   Tk::Ev('X'), Tk::Ev('Y') ]);
+        my $chunkD = $llistaRel->[$i + 1];
+        my $nom    = $llistaRel->[$i];
+        $this->[0]->bind($idRec, '<Button-1>', sub { $this->zoom($chunkD); });
+        $this->[0]->bind($idRec, '<Button-3>',
+                         [ sub { $this->prepararEliminar($nom, 'out', $chunkD, @_); },
+                           Tk::Ev('X'), Tk::Ev('Y') ]);
 
-	$xrel -= 1;
-	$yrel += 40;
+        $xrel -= 1;
+        $yrel += 40;
     }
 
     # Bis
     my $llistaRel = $chunk->getBidireccionals();
     for (my $i = 0; $i < @{$llistaRel}; $i += 2) {
-	$idRec = $this->[0]->createRectangle(40, $yrel, 90, $yrel + 20,
-					     -outline => 'black',
-					     -fill => $llistaRel->[$i+1]->getColor());
-	$this->[0]->createText(65, $yrel + 10, -anchor => 'center',
-			       -fill => 'white',
-			       -text => $llistaRel->[$i+1]->getId());
-	$this->[0]->createText(42, $yrel - 1, -anchor => 'sw',
-			       -fill => 'black',
-			       -text => $llistaRel->[$i]);
-	$this->[0]->createLine(40, 15 + $xrel, $xrel, 15 + $xrel,
-			       $xrel, $yrel + 10, 40, $yrel + 10,
-			       -fill => 'green', -arrow => 'both');
+        $idRec = $this->[0]->createRectangle(40, $yrel, 90, $yrel + 20,
+                                             -outline => 'black',
+                                             -fill => $llistaRel->[$i+1]->getColor());
+        $this->[0]->createText(65, $yrel + 10, -anchor => 'center',
+                               -fill => 'white',
+                               -text => $llistaRel->[$i+1]->getId());
+        $this->[0]->createText(42, $yrel - 1, -anchor => 'sw',
+                               -fill => 'black',
+                               -text => $llistaRel->[$i]);
+        $this->[0]->createLine(40, 15 + $xrel, $xrel, 15 + $xrel,
+                               $xrel, $yrel + 10, 40, $yrel + 10,
+                               -fill => 'green', -arrow => 'both');
 
-	my $chunkD = $llistaRel->[$i + 1];
-	my $nom    = $llistaRel->[$i];
-	$this->[0]->bind($idRec, '<Button-1>', sub { $this->zoom($chunkD); });
-	$this->[0]->bind($idRec, '<Button-3>',
-			 [ sub { $this->prepararEliminar($nom, 'bi', $chunkD, @_); },
-			   Tk::Ev('X'), Tk::Ev('Y') ]);
+        my $chunkD = $llistaRel->[$i + 1];
+        my $nom    = $llistaRel->[$i];
+        $this->[0]->bind($idRec, '<Button-1>', sub { $this->zoom($chunkD); });
+        $this->[0]->bind($idRec, '<Button-3>',
+                         [ sub { $this->prepararEliminar($nom, 'bi', $chunkD, @_); },
+                           Tk::Ev('X'), Tk::Ev('Y') ]);
 
-	$xrel -= 1;
-	$yrel += 40;
+        $xrel -= 1;
+        $yrel += 40;
     }
 }
-
 
 # Netejar
 sub clean {
@@ -164,19 +161,16 @@ sub clean {
     $this->[0]->delete('all');
 }
 
-
 # Set germa text
 sub setGerma { $_[0]->[2] = $_[1]; }
-
 
 # Zoom
 sub zoom {
     my ($this, $chunk) = @_;
-    
+
     # Li diem al text que ensenyi el que toca
     $this->[2]->see($chunk->getStart());
 }
-
 
 # Preparar eliminar
 sub prepararEliminar {
@@ -189,7 +183,6 @@ sub prepararEliminar {
 
     $this->[1]->Post($x, $y);
 }
-
 
 # Eliminar Rel
 sub eliminarRel {
@@ -205,7 +198,6 @@ sub eliminarRel {
     $this->clean();
     $this->actualitzar($this->[3]);
 }
-
 
 # Retornem Cert
 1;

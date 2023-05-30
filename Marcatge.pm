@@ -1,19 +1,19 @@
-# Copyright (C)  Edgar Gonzàlez i Pellicer
+# Copyright (C) 2005-2011  Edgar Gonzàlez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Marcatge
@@ -49,104 +49,103 @@ sub new {
     # Comprovem el Fitxer
     die "Marking does not exist: $fitxer\n" if !(-e $fitxer);
     die "Marking is not readable: $fitxer\n" if !(-r $fitxer);
-    
+
     # Parsegem
     my $parser = new XML::Parser(Style => 'Tree');
     my $arbre;
     eval {
-	$arbre = $parser->parsefile($fitxer);
+        $arbre = $parser->parsefile($fitxer);
     };
     die "Marking file is not XML: $fitxer\n" if $@;
-    
+
     # Creem les llistes d'Atributs i de Relacions
     die "Marking file does not contain an XML <marking>: $fitxer\n"
-	if $arbre->[0] ne 'marking' && $arbre->[0] ne 'marcatge';
-    
+        if $arbre->[0] ne 'marking' && $arbre->[0] ne 'marcatge';
+
     # Busquem l'etiqueta
     $this->[5] = $arbre->[1][0]{'element'} if defined($arbre->[1][0]{'element'});
     shift(@{$arbre->[1]});
-    
+
     # Anem llegint
     while (@{$arbre->[1]}) {
-	my ($tag, $contingut) = (shift(@{$arbre->[1]}), shift(@{$arbre->[1]}));
-	if ($tag eq '0') {
-	    # Es text, passem d'ell
-	    
-	} elsif ($tag eq 'attribute' || $tag eq 'atribut') {
-	    # Atributs
-	    # Nom
-	    my $nom = $contingut->[0]{'name'} || $contingut->[0]{'nom'};
-	    my $infoAtrib = [ $nom ];
-	    my $hashColors = {};
-	    
-	    # Valors
-	    shift(@{$contingut});
+        my ($tag, $contingut) = (shift(@{$arbre->[1]}), shift(@{$arbre->[1]}));
+        if ($tag eq '0') {
+            # Es text, passem d'ell
 
-	    my $i = 0;
-	    while (@{$contingut}) {
-		my ($tag2, $cont2)
-		    = (shift(@{$contingut}), shift(@{$contingut}));
-		if ($tag2 eq 'value' || $tag2 eq 'valor') {
-		    # Agafem el valor
-		    push(@{$infoAtrib}, $cont2->[0]{'v'});
-		    $hashColors->{$cont2->[0]{'v'}} = $Chunk::colors[$i++ % @Chunk::colors];
-		}
-	    }
-	    
-	    # Ho afegim a la llista i al Haix
-	    push(@{$this->[0]}, $infoAtrib);
-	    push(@{$this->[6]}, $hashColors);
-	    $this->[2]->{$nom} = $#{$this->[0]};
-	    
-	} elsif ($tag eq 'relation' || $tag eq 'relacio') {
-	    # Relacions
-	    # Obtenim atributs
-	    my $nom = $contingut->[0]{'name'} || $contingut->[0]{'nom'};
-	    my $ste = $contingut->[0]{'stereo'};
-	    
-	    # Ho afegim a la llista i al haix
-	    push(@{$this->[1]}, [ $nom, $ste ]);
-	    $this->[3]->{$nom} = $#{$this->[1]};
+        } elsif ($tag eq 'attribute' || $tag eq 'atribut') {
+            # Atributs
+            # Nom
+            my $nom = $contingut->[0]{'name'} || $contingut->[0]{'nom'};
+            my $infoAtrib = [ $nom ];
+            my $hashColors = {};
 
-	} elsif ($tag eq 'clustered') {
-	    # El fitxer es clustered
-	    $this->[4] = 1;
+            # Valors
+            shift(@{$contingut});
 
-	} elsif ($tag eq 'plugin') {
-	    # Afegim un plugin
-	    my $nom    = $contingut->[0]{'name'}  || $contingut->[0]{'nom'};
-	    my $classe = $contingut->[0]{'class'} || $contingut->[0]{'classe'};
-	    my $fitxer = $contingut->[0]{'file'}  || $contingut->[0]{'fitxer'};
-	    
-	    push(@{$this->[7]}, $nom, $classe, $fitxer);
+            my $i = 0;
+            while (@{$contingut}) {
+                my ($tag2, $cont2)
+                    = (shift(@{$contingut}), shift(@{$contingut}));
+                if ($tag2 eq 'value' || $tag2 eq 'valor') {
+                    # Agafem el valor
+                    push(@{$infoAtrib}, $cont2->[0]{'v'});
+                    $hashColors->{$cont2->[0]{'v'}} = $Chunk::colors[$i++ % @Chunk::colors];
+                }
+            }
 
-	} elsif ($tag eq 'extra') {
-	    # Add an extra label
-	    my $name = $contingut->[0]{'element'};
-	    push(@{$this->[9]}, $name);
-	}
-	# Espai per a ampliacions
+            # Ho afegim a la llista i al Haix
+            push(@{$this->[0]}, $infoAtrib);
+            push(@{$this->[6]}, $hashColors);
+            $this->[2]->{$nom} = $#{$this->[0]};
+
+        } elsif ($tag eq 'relation' || $tag eq 'relacio') {
+            # Relacions
+            # Obtenim atributs
+            my $nom = $contingut->[0]{'name'} || $contingut->[0]{'nom'};
+            my $ste = $contingut->[0]{'stereo'};
+
+            # Ho afegim a la llista i al haix
+            push(@{$this->[1]}, [ $nom, $ste ]);
+            $this->[3]->{$nom} = $#{$this->[1]};
+
+        } elsif ($tag eq 'clustered') {
+            # El fitxer es clustered
+            $this->[4] = 1;
+
+        } elsif ($tag eq 'plugin') {
+            # Afegim un plugin
+            my $nom    = $contingut->[0]{'name'}  || $contingut->[0]{'nom'};
+            my $classe = $contingut->[0]{'class'} || $contingut->[0]{'classe'};
+            my $fitxer = $contingut->[0]{'file'}  || $contingut->[0]{'fitxer'};
+
+            push(@{$this->[7]}, $nom, $classe, $fitxer);
+
+        } elsif ($tag eq 'extra') {
+            # Add an extra label
+            my $name = $contingut->[0]{'element'};
+            push(@{$this->[9]}, $name);
+        }
+        # Espai per a ampliacions
     }
-    
+
     return bless($this, $classe);
 }
-
 
 # Build Cadena
 sub buildCadena {
     my ($this, $chunk) = @_;
-    
+
     my $cadena = "<$this->[5] id=\"".$chunk->getId().'"';
-    
+
     # Subst
     $cadena .= ' subst="'.$chunk->getSubst().'"' if $this->[4];
-	   
+
     # Atributs
     my $valors = $chunk->getAtributs();
     my $i = 0;
     foreach my $atr (@{$this->[0]}) {
-	# Nom i valor de l'atribut
-	$cadena .= " $atr->[0]=\"$valors->[$i++]\"";
+        # Nom i valor de l'atribut
+        $cadena .= " $atr->[0]=\"$valors->[$i++]\"";
     }
     $cadena .= '>';
 
@@ -154,20 +153,19 @@ sub buildCadena {
     my $cadenaRels = '';
     my $relacions = $chunk->getSortints();
     for (my $i = 0; $i < @{$relacions}; $i += 2) {
-	$cadenaRels .= "<rel type=\"$relacions->[$i]\" target=\""
-	    .$relacions->[$i+1]->getId().'" />';
+        $cadenaRels .= "<rel type=\"$relacions->[$i]\" target=\""
+            .$relacions->[$i+1]->getId().'" />';
     }
     $relacions = $chunk->getBidireccionals();
     for (my $i = 0; $i < @{$relacions}; $i += 2) {
-	$cadenaRels .= "<rel type=\"$relacions->[$i]\" target=\""
-	    .$relacions->[$i+1]->getId().'" />';
+        $cadenaRels .= "<rel type=\"$relacions->[$i]\" target=\""
+            .$relacions->[$i+1]->getId().'" />';
     }
-    
+
     $cadena .= "<rels>$cadenaRels</rels>" if $cadenaRels;
 
     return $cadena;
 }
-
 
 # Consultores
 sub getAtributs  { return $_[0]->[0]; }
@@ -187,7 +185,6 @@ sub colorAtribut {
 
     return $this->[6][$nAtrib]{$valor};
 }
-
 
 # Retornem Cert
 1;

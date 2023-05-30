@@ -1,19 +1,19 @@
-# Copyright (C)  Edgar Gonzàlez i Pellicer
+# Copyright (C) 2005-2011  Edgar GonzÃ lez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Informacio del Chunk
@@ -35,13 +35,12 @@ sub new {
     my ($classe, $pare) = @_;
 
     # Creem el Panell
-    # En un principi està buit
+    # En un principi estÃ  buit
     my $frame = $pare->Frame();
-    
+
     my $this = [ $frame, [], [], 0 ];
     return bless($this, $classe);
 }
-
 
 # Emplenar
 sub populate {
@@ -49,7 +48,7 @@ sub populate {
 
     # Netegem tot el que hi hagi
     foreach my $widget (@{$this->[1]}) {
-	$widget->gridForget();
+        $widget->gridForget();
     }
 
     # Llista nova
@@ -57,9 +56,9 @@ sub populate {
 
     # Anem afegint les caracteristiques del projecte
     my ($atributs, $isClustered) = map {
-	($_->getAtributs(), $_->isClustered())
-	} $projecte->getMarcatge();
-    
+        ($_->getAtributs(), $_->isClustered())
+        } $projecte->getMarcatge();
+
     # Afegim les variables
     my $mida = @{$atributs} + 3;
     @{$this->[2]} = ( undef ) x $mida;
@@ -67,47 +66,47 @@ sub populate {
 
     # Afegim l'ID
     push(@{$this->[1]},
-	 $this->[0]->Label(-text => 'id: ')
-	 ->grid(-column => 0, -row => 0, -sticky => 'ne'));
+         $this->[0]->Label(-text => 'id: ')
+         ->grid(-column => 0, -row => 0, -sticky => 'ne'));
     push(@{$this->[1]},
-	 $this->[0]->Entry(-width => 10, -state => 'disabled',
-			   -textvariable => \$this->[2][0])
-	 ->grid(-column => 1, -row => 0, -sticky => 'nw'));
+         $this->[0]->Entry(-width => 10, -state => 'disabled',
+                           -textvariable => \$this->[2][0])
+         ->grid(-column => 1, -row => 0, -sticky => 'nw'));
 
-    # Indexs per a col·locacio
+    # Indexs per a colÂ·locacio
     my ($col, $row);
 
     # Afegim el Subst si es clustered
     if ($isClustered) {
-	push(@{$this->[1]},
-	     $this->[0]->Label(-text => 'subst: ')
-	     ->grid(-column => 2, -row => 0, -sticky => 'ne'));
-	push(@{$this->[1]},
-	     $this->[0]->Entry(-width => 10, -state => 'disabled',
-			       -textvariable => \$this->[2][1])
-	     ->grid(-column => 3, -row => 0, -sticky => 'nw'));
+        push(@{$this->[1]},
+             $this->[0]->Label(-text => 'subst: ')
+             ->grid(-column => 2, -row => 0, -sticky => 'ne'));
+        push(@{$this->[1]},
+             $this->[0]->Entry(-width => 10, -state => 'disabled',
+                               -textvariable => \$this->[2][1])
+             ->grid(-column => 3, -row => 0, -sticky => 'nw'));
 
-	$col = 4;
-	$row = 0;
-	
+        $col = 4;
+        $row = 0;
+
     } else {
-	$col = 2;
-	$row = 0;
+        $col = 2;
+        $row = 0;
     }
-    
+
     # Afegim el nombre de mots
     push(@{$this->[1]},
-	 $this->[0]->Label(-text => '#words: ')
-	 ->grid(-column => $col, -row => $row, -sticky => 'ne'));
+         $this->[0]->Label(-text => '#words: ')
+         ->grid(-column => $col, -row => $row, -sticky => 'ne'));
     push(@{$this->[1]},
-	 $this->[0]->Entry(-width => 10, -state => 'disabled',
-			   -textvariable => \$this->[2][2])
-	 ->grid(-column => $col+1, -row => $row, -sticky => 'nw'));
+         $this->[0]->Entry(-width => 10, -state => 'disabled',
+                           -textvariable => \$this->[2][2])
+         ->grid(-column => $col+1, -row => $row, -sticky => 'nw'));
 
     $col += 2;
     if ($col == 6) {
-	$col = 0;
-	++$row;
+        $col = 0;
+        ++$row;
     }
 
     # Index de les variables
@@ -115,25 +114,24 @@ sub populate {
 
     # Anem afegint cada caracteristica
     foreach my $atr (@{$atributs}) {
-	# Widgets
-	push(@{$this->[1]},
-	     $this->[0]->Label(-text => "$atr->[0] :")
-	     ->grid(-column => $col, -row => $row, -sticky => 'ne'));
-	push(@{$this->[1]},
-	     $this->[0]->Entry(-width => 10, -state => 'disabled',
-			       -textvariable => \$this->[2][$idx])
-	     ->grid(-column => $col+1, -row => $row, -sticky => 'ne'));
-	
-	# Actualitzem Indexos
-	$idx += 1;
-	$col += 2;
-	if ($col == 6) {
-	    $col = 0;
-	    $row += 1;
-	}
+        # Widgets
+        push(@{$this->[1]},
+             $this->[0]->Label(-text => "$atr->[0] :")
+             ->grid(-column => $col, -row => $row, -sticky => 'ne'));
+        push(@{$this->[1]},
+             $this->[0]->Entry(-width => 10, -state => 'disabled',
+                               -textvariable => \$this->[2][$idx])
+             ->grid(-column => $col+1, -row => $row, -sticky => 'ne'));
+
+        # Actualitzem Indexos
+        $idx += 1;
+        $col += 2;
+        if ($col == 6) {
+            $col = 0;
+            $row += 1;
+        }
     }
 }
-
 
 # Actualitzar
 sub actualitzar {
@@ -145,20 +143,18 @@ sub actualitzar {
 
     my $atribs = $chunk->getAtributs();
     for (my $i = 3; $i < $this->[3]; ++$i) {
-	$this->[2][$i] = $atribs->[$i - 3];
+        $this->[2][$i] = $atribs->[$i - 3];
     }
 }
-
 
 # Netejar
 sub clean {
     my ($this) = @_;
 
     for (my $i = 0; $i < $this->[3]; ++$i) {
-	$this->[2][$i] = '';
+        $this->[2][$i] = '';
     }
 }
-
 
 # Retornem cert
 1;

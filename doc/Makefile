@@ -1,21 +1,18 @@
-all: fig_all ptkcha.ps.gz ptkcha.pdf
+all: fig_all ptkcha.pdf
 
 # LaTeX
 %.pdf: %.dvi
 	dvipdf $<
 
-%.ps.gz: %.ps
-	gzip -f $<
-
-%.ps: %.dvi
-	dvips -o $@ $<
-
 %.dvi: %.tex
-	wraplatex $<
+	latex $*
+	bibtex $*
+	latex $*
+	latex $*
 
 # Clean
 clean: fig_clean
-	rm -f ptkcha.ps.gz ptkcha.log ptkcha.dvi ptkcha.aux
+	rm -f ptkcha.aux ptkcha.bbl ptkcha.blg ptkcha.dvi ptkcha.log ptkcha.toc
 
 # fig/ subdir
 fig_all:

@@ -1,19 +1,19 @@
-# Copyright (C)  Edgar Gonzàlez i Pellicer
+# Copyright (C) 2005-2011  Edgar GonzÃ lez i Pellicer
 #
 # This file is part of PTkChA
-#  
+#
 # PTkChA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software 
+# along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Plugin per a resum
@@ -38,17 +38,15 @@ sub new {
 
     # Construim el dialegLlista
     my $llista = new DialegLlista($main->[3], 'Dependency Checking',
-				  30);
+                                  30);
 
     return bless([ $dialeg, $main, $llista ], $classe);
 }
-
 
 # Destructor
 sub free {
     # my ($this) = @_;
 }
-
 
 # Crear Menu
 # Rep com a parametre el pare
@@ -57,14 +55,13 @@ sub makeMenu {
 
     my $menu = $pare->Menu(-tearoff => 0);
     $menu->add('command', -label => 'Generate Summary...',
-	       -command => sub { $this->generarResum() } );
+               -command => sub { $this->generarResum() } );
     $menu->add('separator');
     $menu->add('command', -label => 'Check Dependencies',
-	       -command => sub { $this->checkDependencies(1) } );
+               -command => sub { $this->checkDependencies(1) } );
 
     return $menu;
 }
-
 
 # Generar un resum
 sub generarResum {
@@ -77,7 +74,6 @@ sub generarResum {
     $this->[0]->mostrar();
 }
 
-
 # Comprovar les Dependencies
 sub checkDependencies {
     my ($this, $info) = @_;
@@ -85,45 +81,44 @@ sub checkDependencies {
     # Netegem la llista
     $this->[2]->netejarLlista();
 
-    # Comprovem les dependències...
+    # Comprovem les dependÃ¨ncies...
     my $totOk = 1;
 
     # Busquem atribut pes
     my $idxPes = $this->[1]->getProjecte()
-	->getMarcatge()->findAtribut('weight');
-    
+        ->getMarcatge()->findAtribut('weight');
+
     # Recorrem la llista de chunks
     foreach my $ch ($this->[1]->getChunks()) {
-	# Pes
-	my $elMeuPes = $ch->getAtributs()->[$idxPes];
+        # Pes
+        my $elMeuPes = $ch->getAtributs()->[$idxPes];
 
-	# Comprovem que el pes dels chunks de què depèn sigui major
-	my $sortints = $ch->getSortints();
-	for (my $i = 0; $i < @{$sortints}; $i += 2) {
-	    if ($sortints->[$i] eq 'depen' &&
-		$elMeuPes < $sortints->[$i + 1]->getAtributs()->[$idxPes]) {
-		
-		# Afegim a la llista l'error
-		$this->[2]->afegirElement("Chunk ".$ch->getId()." (weight $elMeuPes) ");
-		$this->[2]->afegirElement(" depends on Chunk ".$sortints->[$i + 1]->getId()." (weight ".$sortints->[$i + 1]->getAtributs()->[$idxPes].")!");
-		# Error
-		$totOk = 0;
-	    }
-	}
+        # Comprovem que el pes dels chunks de quÃ¨ depÃ¨n sigui major
+        my $sortints = $ch->getSortints();
+        for (my $i = 0; $i < @{$sortints}; $i += 2) {
+            if ($sortints->[$i] eq 'depen' &&
+                $elMeuPes < $sortints->[$i + 1]->getAtributs()->[$idxPes]) {
+
+                # Afegim a la llista l'error
+                $this->[2]->afegirElement("Chunk ".$ch->getId()." (weight $elMeuPes) ");
+                $this->[2]->afegirElement(" depends on Chunk ".$sortints->[$i + 1]->getId()." (weight ".$sortints->[$i + 1]->getAtributs()->[$idxPes].")!");
+                # Error
+                $totOk = 0;
+            }
+        }
     }
 
     if ($totOk) {
-	if ($info) {
-	    $this->[2]->afegirElement("All dependencies OK!");
-	    $this->[2]->Show();
-	}
+        if ($info) {
+            $this->[2]->afegirElement("All dependencies OK!");
+            $this->[2]->Show();
+        }
     } else {
-	$this->[2]->Show();
+        $this->[2]->Show();
     }
 
     return $totOk;
 }
-
 
 # Retornem cert
 1;

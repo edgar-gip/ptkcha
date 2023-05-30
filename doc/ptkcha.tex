@@ -1,4 +1,4 @@
-% Copyright (C)  Edgar Gonzàlez i Pellicer
+% Copyright (C) 2005-2011  Edgar GonzÃ lez i Pellicer
 %
 % This file is part of PTkChA
 %
@@ -20,13 +20,13 @@
 
 \usepackage{a4wide}
 \usepackage{graphicx}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage{url}
 
 \newcommand{\ptkcha}{\textbf{PTkChA}}
 
 \title{PTkChA\\A Perl/Tk Chunk Annotator}
-\author{Edgar Gonzàlez i Pellicer}
+\author{Edgar GonzÃ lez i Pellicer}
 \date{}
 
 \begin{document}
@@ -42,8 +42,8 @@
 files. It offers a GUI to aid in the task of annotating
 non-overlapping fragments of text, as well as support for Plugins.
 
-It has been written using Perl/Tk by Edgar Gonzàlez i
-Pellicer\footnote{\url{http://www.lsi.upc.edu/~egonzalez}} at the TALP
+It has been written using Perl/Tk by Edgar GonzÃ lez i
+Pellicer\footnote{\url{https://github.com/edgar-gip}} at the TALP
 Research Center in Barcelona.
 
 \subsection{License}
@@ -63,10 +63,9 @@ probably work.
 \item \textbf{XML-Parser-2.34} Perl module, \url{http://search.cpan.org}.
 \end{itemize}
 
-
 \subsection{Installation}
-Download the last version (currently 2.8.1) from
-\url{http://www.lsi.upc.edu/~egonzalez/ptkcha.html}, and uncompress
+Download the last version (currently 2.8.2) from
+\url{https://github.com/edgar-gip/ptkcha}, and uncompress
 the tar file you will find there in a directory of your
 choice. \ptkcha\ only needs permission to write its configuration
 file, \texttt{.ptkcha.xml}, in your home directory.
@@ -85,7 +84,6 @@ interesting to keep it.
 \begin{verbatim}
 > perl ptkcha.pl | tee ptkcha.log
 \end{verbatim}
-
 
 \section{Concepts}
 \label{sec:concepts}
@@ -504,7 +502,6 @@ the \textbf{target} of the relation. The target chunk is identified by
 its unique ID. If there are no relations coming out of the chunk, the
 \textbf{rels} element is omitted.
 
-
 \section{Plugins}
 \label{sec:plugins}
 
@@ -648,7 +645,6 @@ the same cluster are equivalent. Hence, only one of the chunks in a
 cluster needs to be present in the summary.
 \end{description}
 
-
 \subsection{Summary Plugin}
 \label{sec:sumplugin}
 The plugin offers two main functionalities: that of generating
@@ -734,5 +730,3 @@ or project \textbf{to} the current file or project.
 \bibliography{ptkcha}
 
 \end{document}
-
-

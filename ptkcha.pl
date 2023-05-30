@@ -1,4 +1,4 @@
-# Copyright (C)  Edgar Gonzàlez i Pellicer
+# Copyright (C) 2005-2011  Edgar Gonzàlez i Pellicer
 #
 # This file is part of PTkChA
 #
